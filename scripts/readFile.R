@@ -13,7 +13,7 @@ write.csv(can.wa.16, file = 'data/filtered_WA_can_16.csv', row.names = FALSE)
 
 # stores global variable
 base.uri <- 'http://api.followthemoney.org/'
-api.key <- 'b6349b9565e5e9bc024b94923636fae5'
+api.key <- '8d64edafe5b04dc2c208d6448ca0ded1'
 year <- 2016
 mode.json <- 'json'
 
