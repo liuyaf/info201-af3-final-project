@@ -37,3 +37,6 @@ GetContributor <- function(can.name) {
   return(body.data)
 }
 
+b <- GetContributor('MURRAY, PATTY')
+
+a <- read.csv('./data/USZipCodes.csv', stringsAsFactors = FALSE)
