@@ -5,55 +5,6 @@ library(ggmap)
 library(dplyr)
 library(sp)
 
-df <- as.data.frame(read.csv("../data/WashingtonSenateContributions.csv", stringsAsFactors = FALSE))
-
-df.formatted <- df %>% select(Candidate, General_Party, Election_Year, Incumbency_Status, Amount, City, State)
-
-df.state <- df.formatted %>% group_by(State) %>% summarize(contributions = sum(Amount))
-
-state.abb2 <- c(state.abb, "DC")
-df.state <- df.state[ df.state$State %in% state.abb2, ]
-state.name2 <- c(state.name, "District of Columbia")
-df.state$State.full <- state.name2[match(df.state$State, state.abb2)]
-
-df.state <- df.state %>% select(State.full, contributions)
-
-colnames(df.state) <- c("name","total")
-
-state.data <- sp::merge(states, df.state, by = "name")
-
-bins <- seq(1,1000000,length=5)
-pal <- colorBin("YlOrRd", domain = state.data$total, bins = bins)
-
-labels <- sprintf(
-  "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
-  state.data$name, state.data$total
-) %>% lapply(htmltools::HTML)
-
-leaflet(state.data) %>%
-  setView(-96, 37.8, 4) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
-  addPolygons(
-    fillColor = ~pal(total),
-    weight = 2,
-    opacity = 1,
-    color = "white",
-    dashArray = "3",
-    fillOpacity = 0.7,
-    highlight = highlightOptions(
-      weight = 5,
-      color = "#666",
-      dashArray = "",
-      fillOpacity = 0.7,
-      bringToFront = TRUE),
-    label = labels,
-    labelOptions = labelOptions(
-      style = list("font-weight" = "normal", padding = "3px 8px"),
-      textsize = "15px",
-      direction = "auto")) %>%
-  addLegend(pal = pal, values = ~total, opacity = 0.7, title = NULL,
-            position = "bottomright")
-
 
 df <- as.data.frame(read.csv("../data/WashingtonSenateContributions.csv", stringsAsFactors = FALSE))
 
@@ -81,14 +32,14 @@ BuildUSMap <- function(df, values = "total", map.label = "<strong>%s</strong><br
   # Get max value of the passed in dataframe
   value.max <- max(df$total)
   
+  # Merge state polygon with state values.
+  state.data <- sp::merge(states, df, by = "name")
+  
   # Create "bins" legend intervals
   bins <- seq(0, value.max,length=8)
   
   # Create colors
   pal <- colorBin("Greens", domain = state.data$total, bins = bins)
-  
-  # Merge state polygon with state values.
-  state.data <- sp::merge(states, df, by = "name")
   
   # Create Labels
   labels <- sprintf(

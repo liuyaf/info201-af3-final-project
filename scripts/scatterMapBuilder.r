@@ -4,40 +4,6 @@ library(ggmap)
 library(dplyr)
 library(sp)
 
-
-df <- as.data.frame(read.csv("../data/WashingtonSenateContributions.csv", stringsAsFactors = FALSE))
-locations <- as.data.frame(read.csv("../data/zip_codes_states.csv",stringsAsFactors = FALSE))
-locations$city <- toupper(locations$city)
-
-df <- df %>% group_by(State, City)  %>% summarise(total = sum(Amount), records = n())
-
-locations.2 <- locations %>% group_by(state, city) %>% summarise(lat = min(latitude), lon = min(longitude))
-
-known <- left_join(df, locations.2, by = c("State" = "state", "City" = "city"))
-
-
-
-known$size <- ntile(known$total, 10)  
-
-map.label <- "<strong>%s</strong><br/>$%g in Contributions<br/>%g Contributor(s)"
-
-
-labels <- sprintf(
-  map.label,
-  eval(parse(text = "known$City")), known$total, known$records
-) %>% lapply(htmltools::HTML) 
-
-
-leaflet(known) %>% addTiles() %>%
-  setView(-96, 37.8, 4) %>%
-  addProviderTiles(providers$CartoDB.DarkMatter) %>%
-  addCircleMarkers(
-    ~lon, ~lat,
-    radius = ~size,
-    stroke = FALSE, fillOpacity = 0.5,
-    label = labels
-  )
-
 df <- as.data.frame(read.csv("../data/WashingtonSenateContributions.csv", stringsAsFactors = FALSE))
 locations <- as.data.frame(read.csv("../data/zip_codes_states.csv",stringsAsFactors = FALSE))
 locations$city <- toupper(locations$city)
