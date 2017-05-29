@@ -11,15 +11,22 @@ shinyUI(navbarPage("Political Bidding",
                    # Tab Panel will show a grouped representation of the cereals based on input from
                    # the user via the 2 selectInput widgets, graph's marker size is based on frequency
                    tabPanel("2016 Election",
-                            sidebarPanel(
-                              
-                            ), # end sidebar
                             
-                            # Main panel of the Plot tab shows the outputted plot given the user's inputs 
+                            sidebarPanel(
+                              selectInput("election", "Election Type:", c("Loading...")),
+                              selectInput("year", "Year:", c("Loading...")),
+                              selectInput("party", "General Party:", c("Loading...")),
+                              selectizeInput(
+                                'candidate', 'Candidate', choices = c("Loading..."),
+                                multiple = FALSE
+                              )
+                            ),
+                            
                             mainPanel(
-                              
-                            ) # end mainPanel
-                   ),  # end tabPanel
+                              leafletOutput("map")
+                            )
+                            # end mainPanel
+                   ), #end tabPanel 1
                    
                    # Tab Panel shows the raw data that the plots are being formed by.
                    tabPanel("Contribution to Candidate",
