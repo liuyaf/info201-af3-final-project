@@ -22,7 +22,34 @@ shinyUI(navbarPage("Political Bidding",
                    ),  # end tabPanel
                    
                    # Tab Panel shows the raw data that the plots are being formed by.
-                   tabPanel("Washington State"
+                   tabPanel("Contribution to Candidate",
+                            
+                            # titlepanel
+                            titlePanel('Top 100 Contribution to Specific Candidate'),
+                            
+                            # creates sidebar to input candidate's name
+                            sidebarLayout(
+                              sidebarPanel(
+                                
+                                # Input box to collect candidate's name
+                                textInput("canname", label = h3("Candidate Name"), value = "Enter name..."),
+                                
+                                # radio butttons that can group barchart by industry
+                                radioButtons("colorvar", label = h3("Color Barchart by Industry"),
+                                             choices = list("Yes" = '~industry', "No" = 'NULL'), 
+                                             selected = 1)
+                              ),
+                              
+                              # Use plotlyOutput to show the scatter plot
+                              mainPanel(
+                                tabsetPanel(
+                                  tabPanel("Barchart", plotlyOutput("bar.con")), 
+                                  tabPanel("Map", plotlyOutput("map.con")), 
+                                  tabPanel("Piechart", plotlyOutput("pie.con"))
+                                )
+                                
+                              )
+                            )
                             
                    ) # end tabPanel
 
