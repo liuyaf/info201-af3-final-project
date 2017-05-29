@@ -51,7 +51,18 @@ shinyUI(navbarPage("Political Bidding",
                               )
                             )
                             
+                   ), # end tabPanel
+                   tabPanel("Candidate Winning Percentage",
+                            titlePanel("Candidate Winning Percentage Based Off Spending"),
+                            
+                            sidebarPanel(
+                              
+                            ),
+                            
+                            mainPanel(
+                              
+                            )
+                            
                    ) # end tabPanel
-
                    
 )) #end shinyUI
