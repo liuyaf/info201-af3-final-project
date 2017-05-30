@@ -66,10 +66,8 @@ shinyUI(navbarPage("Political Bidding",
                               # Radio buttons for either the user to see if they want to see data from the House or the Senate
                               radioButtons("govBranch", label = h3("Select which Branch of Legislation you want to see:"), 
                                            choices = c("House of Representatives", "Senate"), selected = "House of Representatives"),
-                              uiOutput("ui"),
+                              uiOutput("ui")
                               #The slider for the user to select the range of money that they want to see
-                              #sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 80122596, value = c(0, 1000000)),
-                              width = 12
                             ),
                             
                             mainPanel(
