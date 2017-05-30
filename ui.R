@@ -39,14 +39,14 @@ shinyUI(navbarPage("Political Bidding",
                    tabPanel("Contribution to Candidate",
                             
                             # titlepanel
-                            titlePanel('Top 100 Contribution to Specific Candidate'),
+                            titlePanel('Top 100 Contribution to Specific Candidate (WA)'),
                             
                             # creates sidebar to input candidate's name
                             sidebarLayout(
                               sidebarPanel(
                                 
                                 # Input box to collect candidate's name
-                                textInput("canname", label = h3("Candidate Name (Defualt MURRAY, PATTY"), value = "MURRAY, PATTY"),
+                                textInput("canname", label = h3("Candidate Name"), value = "MURRAY, PATTY"),
                                 
                                 # radio butttons that can group barchart by industry
                                 radioButtons("colorvar", label = h3("Color Barchart by Industry"),
