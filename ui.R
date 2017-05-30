@@ -24,14 +24,32 @@ shinyUI(navbarPage("Political Bidding",
                                 'candidate', 'Candidate', choices = c("Loading..."),
                                 multiple = FALSE
                               ),
-                              uiOutput("go_buttons")
+                              radioButtons("show", "Show Tables:",
+                                             c("Yes" = "yes",
+                                               "No" = "no")),
+                              uiOutput("go_buttons"),
+                              width = 2
                             ),
                             mainPanel(
-                              tabsetPanel(
-                                tabPanel("Plot", uiOutput("plots")),
-                                uiOutput("tabs")
+                              fluidRow(
+                                column(12,
+                                  conditionalPanel(
+                                    condition = "input.show == no",
+                                    column(12,
+                                           uiOutput("plots")
+                                    )
+                                  ),
+                                  conditionalPanel(
+                                    condition = "input.show == 'yes'",
+                                    column(8,
+                                           uiOutput("plots")
+                                    ),
+                                    column(4,
+                                      uiOutput("tabs")
+                                    )
+                                  )
+                                )) # end fluidRow
                               )
-                            )
                             # end mainPanel
                    ), #end tabPanel 1
                    

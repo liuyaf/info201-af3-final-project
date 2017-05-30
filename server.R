@@ -18,7 +18,7 @@ source('./scripts/mixPlot.r')
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
 out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFactors = FALSE))
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))
-city.locations <- as.data.frame(read.csv("./data/mapping/city_locations.csv", stringsAsFactors = FALSE))
+city.locations <- as.data.frame(read.csv("./data/mapping/city_location.csv", stringsAsFactors = FALSE))
 city.locations <- city.locations %>% group_by(State, City, County) %>% summarise(lat = min(Latitude), lon = min(Longitude))
 plots_made <- 0
 
@@ -113,7 +113,6 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, "year", choices = c("All", unique(data.full()$Election_Year)))
     updateSelectInput(session, "party", choices = c("All", unique(data.full()$General_Party)))
     updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
-    
   })
   
   observeEvent(input$year, {
@@ -141,10 +140,11 @@ shinyServer(function(input, output, session) {
   
   output$tabs <- renderUI({
     tab_output_list <- lapply(1:input$n, function(i){
-      plotname <- paste("tab", i, sep="")
-      tabPanel(plotname) 
+      tabname <- paste("tab", i, sep="")
+      tabPanel(tabname, 
+          dataTableOutput(paste0("table",i))) 
     })
-    do.call(tagList, tab_output_list)
+    do.call(tabsetPanel, tab_output_list)
   })
   
   # to store observers and make sure only once is created per button
@@ -156,24 +156,10 @@ shinyServer(function(input, output, session) {
     buttons <- lapply(buttons, function(i) {
       btName <- paste0("btn",i)
       # creates an observer only if it doesn't already exists
-      print(names(obsList))
+      
       if (is.null(obsList[[btName]])) {
         # make sure to use <<- to update global variable obsList
         obsList[[btName]] <<- observeEvent(input[[btName]], {
-            plotname <- paste("plot", i, sep="")
-            tabname <- paste("tab", i, sep="")
-            
-            output[[tabname]] <- renderDataTable({
-              candidate.filtered <- candidates()
-              
-              if(input$candidate != "" && input$candidate != "All") {
-                candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
-              }
-              out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
-              out.map <- left_join(out.map, city.locations)
-              out.map
-            })
-            
             output[[paste0("plot",i)]] <- renderLeaflet({
               isolate({
                 candidate.filtered <- candidates()
@@ -191,8 +177,17 @@ shinyServer(function(input, output, session) {
                     setView(-96, 37.8, 4) %>%
                     addProviderTiles(providers$CartoDB.DarkMatter) 
                 }
-              }) #end isolate
+              })#end isolate
           }) #end renderLeaflet
+          output[[paste0("table",i)]] <- renderDataTable({
+            candidate.filtered <- candidates()
+            
+            if(input$candidate != "" && input$candidate != "All") {
+              candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+            }
+            out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+            return(out.map)
+          })
         }) #end observeEvent
       }
       actionButton(btName,paste("Update Plot ",i))
@@ -207,14 +202,15 @@ shinyServer(function(input, output, session) {
     local({
       my_i <- i
       plotname <- paste("plot", my_i, sep="")
-      tabname <- paste("tab", my_i, sep="")
+      tabname <- paste("table", my_i, sep="")
+      
+      output[[tabname]] <- renderDataTable(iris)
       
       output[[plotname]] <- renderLeaflet({
           leaflet() %>% addTiles() %>%
             setView(-96, 37.8, 4) %>%
             addProviderTiles(providers$CartoDB.DarkMatter) 
       })
-      output[[tabname]] <- renderDataTable(data.frame(c("Loading...")))
     })
   }
   
