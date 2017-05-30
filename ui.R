@@ -25,9 +25,11 @@ shinyUI(navbarPage("Political Bidding",
                               ),
                               uiOutput("go_buttons")
                             ),
-                            
                             mainPanel(
-                              uiOutput("plots")
+                              tabsetPanel(
+                                tabPanel("Plot", uiOutput("plots")),
+                                uiOutput("tabs")
+                              )
                             )
                             # end mainPanel
                    ), #end tabPanel 1

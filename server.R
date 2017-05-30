@@ -8,16 +8,15 @@ library(shiny)
 library(dplyr)
 library(leaflet)
 
-max_plots <- 5
 
+max_plots <- 5
 source("./scripts/scatterMapBuilder.r")
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
 out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFactors = FALSE))
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))
 city.locations <- as.data.frame(read.csv("./data/mapping/city_locations.csv", stringsAsFactors = FALSE))
 city.locations <- city.locations %>% group_by(State, City, County) %>% summarise(lat = min(Latitude), lon = min(Longitude))
-obsList <- list()
-
+plots_made <- 0
 
 
 # Build shinyServer
@@ -136,6 +135,14 @@ shinyServer(function(input, output, session) {
     do.call(tagList, plot_output_list)
   })
   
+  output$tabs <- renderUI({
+    tab_output_list <- lapply(1:input$n, function(i){
+      plotname <- paste("tab", i, sep="")
+      tabPanel(plotname) 
+    })
+    do.call(tagList, tab_output_list)
+  })
+  
   # to store observers and make sure only once is created per button
   
   obsList <- list()
@@ -145,10 +152,24 @@ shinyServer(function(input, output, session) {
     buttons <- lapply(buttons, function(i) {
       btName <- paste0("btn",i)
       # creates an observer only if it doesn't already exists
-      if (i == input$n) {
+      print(names(obsList))
+      if (is.null(obsList[[btName]])) {
         # make sure to use <<- to update global variable obsList
-        obsList[[btName]] <- observeEvent(input[[btName]], {
+        obsList[[btName]] <<- observeEvent(input[[btName]], {
             plotname <- paste("plot", i, sep="")
+            tabname <- paste("tab", i, sep="")
+            
+            output[[tabname]] <- renderDataTable({
+              candidate.filtered <- candidates()
+              
+              if(input$candidate != "" && input$candidate != "All") {
+                candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+              }
+              out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+              out.map <- left_join(out.map, city.locations)
+              out.map
+            })
+            
             output[[paste0("plot",i)]] <- renderLeaflet({
               isolate({
                 candidate.filtered <- candidates()
@@ -166,14 +187,15 @@ shinyServer(function(input, output, session) {
                     setView(-96, 37.8, 4) %>%
                     addProviderTiles(providers$CartoDB.DarkMatter) 
                 }
-              })
-            })
-        })
+              }) #end isolate
+          }) #end renderLeaflet
+        }) #end observeEvent
       }
       actionButton(btName,paste("Update Plot ",i))
     })
   })
   
+  # render initial map plots
   for (i in 1:max_plots) {
     # Need local so that each item gets its own number. Without it, the value
     # of i in the renderPlot() will be the same across all instances, because
@@ -181,12 +203,14 @@ shinyServer(function(input, output, session) {
     local({
       my_i <- i
       plotname <- paste("plot", my_i, sep="")
+      tabname <- paste("tab", my_i, sep="")
       
       output[[plotname]] <- renderLeaflet({
           leaflet() %>% addTiles() %>%
             setView(-96, 37.8, 4) %>%
             addProviderTiles(providers$CartoDB.DarkMatter) 
       })
+      output[[tabname]] <- renderDataTable(data.frame(c("Loading...")))
     })
   }
   
