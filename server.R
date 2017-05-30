@@ -40,6 +40,18 @@ shinyServer(function(input, output, session) {
    }
   })
   
+  source("./scripts/ElectionPieChart.R")
+  
+  output$electionChart <- renderPlotly({
+    if (input$govBranch == "Senate") {
+      legislature.branch <- read.csv("data/SenateElection.csv", stringsAsFactors=FALSE)
+    } else {
+      legislature.branch <- read.csv("data/HouseElection.csv", stringsAsFactors=FALSE)
+    }
+    wanted.data.from.branch <- legislature.branch[,c(13,16,36)]
+    return(BuildPieChart(wanted.data.from.branch, input$moneyRange[1], input$moneyRange[2]))
+  })
+  
   #######################################MAPPING EVENTS#############################################
   
   observeEvent(input$election, {

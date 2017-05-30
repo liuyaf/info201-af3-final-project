@@ -3,11 +3,7 @@ library(dplyr)
 library(plotly)
 library(ggplot2)
 
-house.results <- read.csv("data/HouseElection.csv")
-house.results.temp <- house.results[,c(13,36)]
-
-
-BuildHousePie <- function(house.results.temp, min, max) {
+BuildPieChart <- function(house.results.temp, min, max) {
   house.filtered <- house.results.temp %>% filter(Total_. > min & Total_. < max)
 
   final.house.data <- house.filtered %>% filter(Status_of_Candidate == "Won" | Status_of_Candidate == "Lost" )
