@@ -6,7 +6,9 @@ library(tools)
 library(plotly)
 library(shiny)
 library(dplyr)
+library(leaflet)
 
+max_plots <- 5
 
 source("./scripts/scatterMapBuilder.r")
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
@@ -14,6 +16,8 @@ out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFa
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))
 city.locations <- as.data.frame(read.csv("./data/mapping/city_locations.csv", stringsAsFactors = FALSE))
 city.locations <- city.locations %>% group_by(State, City, County) %>% summarise(lat = min(Latitude), lon = min(Longitude))
+obsList <- list()
+
 
 
 # Build shinyServer
@@ -69,7 +73,7 @@ shinyServer(function(input, output, session) {
     output$creationPool <- renderUI({Panels})
     session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
   }
-  
+  # End Important
   
   data.full <- reactive({
     if(input$election != 'Loading...'){
@@ -121,25 +125,69 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  map.output <- eventReactive(input$do, {
-    candidate.filtered <- candidates()
-    if(input$candidate != "" && input$candidate != "All") {
-      candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
-    }
-    out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
-    out.map <- left_join(out.map, city.locations)
-    return(out.map)
+  output$plots <- renderUI({
+    plot_output_list <- lapply(1:input$n, function(i) {
+      plotname <- paste("plot", i, sep="")
+      leafletOutput(plotname)
+    })
+    
+    # Convert the list to a tagList - this is necessary for the list of items
+    # to display properly.
+    do.call(tagList, plot_output_list)
   })
   
-  output$map <- renderLeaflet({
-    if(input$election != "Loading...") {
-      BuildScatterMap(map.output())
-    } else {
-      leaflet() %>% addTiles() %>%
-        setView(-96, 37.8, 4) %>%
-        addProviderTiles(providers$CartoDB.DarkMatter) 
-    }
+  # to store observers and make sure only once is created per button
+  
+  obsList <- list()
+  
+  output$go_buttons <- renderUI({
+    buttons <- as.list(1:input$n)
+    buttons <- lapply(buttons, function(i) {
+      btName <- paste0("btn",i)
+      # creates an observer only if it doesn't already exists
+      if (i == input$n) {
+        # make sure to use <<- to update global variable obsList
+        obsList[[btName]] <- observeEvent(input[[btName]], {
+            plotname <- paste("plot", i, sep="")
+            output[[paste0("plot",i)]] <- renderLeaflet({
+              isolate({
+                candidate.filtered <- candidates()
+                
+                if(input$candidate != "" && input$candidate != "All") {
+                  candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+                }
+                out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+                out.map <- left_join(out.map, city.locations)
+                
+                if(input$election != "Loading...") {
+                  BuildScatterMap(out.map)
+                } else {
+                  leaflet() %>% addTiles() %>%
+                    setView(-96, 37.8, 4) %>%
+                    addProviderTiles(providers$CartoDB.DarkMatter) 
+                }
+              })
+            })
+        })
+      }
+      actionButton(btName,paste("Update Plot ",i))
+    })
   })
   
+  for (i in 1:max_plots) {
+    # Need local so that each item gets its own number. Without it, the value
+    # of i in the renderPlot() will be the same across all instances, because
+    # of when the expression is evaluated.
+    local({
+      my_i <- i
+      plotname <- paste("plot", my_i, sep="")
+      
+      output[[plotname]] <- renderLeaflet({
+          leaflet() %>% addTiles() %>%
+            setView(-96, 37.8, 4) %>%
+            addProviderTiles(providers$CartoDB.DarkMatter) 
+      })
+    })
+  }
   
 })

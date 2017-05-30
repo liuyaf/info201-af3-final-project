@@ -7,13 +7,15 @@
 library(shiny)
 library(plotly)
 library(httr)
+library(leaflet)
 
-shinyUI(navbarPage("Political Bidding",
+shinyUI(navbarPage("Political Bidding", 
                    # Tab Panel will show a grouped representation of the cereals based on input from
                    # the user via the 2 selectInput widgets, graph's marker size is based on frequency
                    tabPanel("2016 Election",
                             
                             sidebarPanel(
+                              sliderInput("n", "Number of plots", value=1, min=1, max=5),
                               selectInput("election", "Election Type:", c("Loading...")),
                               selectInput("year", "Year:", c("Loading...")),
                               selectInput("party", "General Party:", c("Loading...")),
@@ -21,11 +23,11 @@ shinyUI(navbarPage("Political Bidding",
                                 'candidate', 'Candidate', choices = c("Loading..."),
                                 multiple = FALSE
                               ),
-                              actionButton("do", "Click Me")
+                              uiOutput("go_buttons")
                             ),
                             
                             mainPanel(
-                              leafletOutput("map")
+                              uiOutput("plots")
                             )
                             # end mainPanel
                    ), #end tabPanel 1
@@ -77,5 +79,11 @@ shinyUI(navbarPage("Political Bidding",
                             )
                             
                    ) # end tabPanel
+                   
+                   ###########################Tabset Stuff for Mapping#########################
+                   # Important! : JavaScript functionality to add the Tabs
+                
+                   
+                   
                    
 )) #end shinyUI
