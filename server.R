@@ -54,7 +54,22 @@ shinyServer(function(input, output, session) {
     return(BuildPieChart(wanted.data.from.branch, input$moneyRange[1], input$moneyRange[2]))
   })
   
-  #######################################MAPPING EVENTS#############################################
+#######################################MAPPING EVENTS#############################################
+  # Important! : creationPool should be hidden to avoid elements flashing before they are moved.
+  #              But hidden elements are ignored by shiny, unless this option below is set.
+  output$creationPool <- renderUI({})
+  outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
+  # End Important
+  
+  # Important! : This is the make-easy wrapper for adding new tabPanels.
+  addTabToTabset <- function(Panels, tabsetName){
+    titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
+    Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
+    
+    output$creationPool <- renderUI({Panels})
+    session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
+  }
+  
   
   data.full <- reactive({
     if(input$election != 'Loading...'){
@@ -73,7 +88,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  data.selected <- reactive({
+  candidates <- reactive({
     out.filtered <- data.full()
     if(input$year != "All"){
       out.filtered <- out.filtered %>% filter_(paste0('Election_Year == "', input$year,'"'))
@@ -81,10 +96,6 @@ shinyServer(function(input, output, session) {
     if(input$party != "All"){
       out.filtered <- out.filtered %>% filter_(paste0('General_Party == "', input$party,'"'))
     }
-    if(input$candidate != "" && input$candidate != "All") {
-      out.filtered <- out.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
-    }
-    
     return(out.filtered)
   })
   
@@ -94,64 +105,41 @@ shinyServer(function(input, output, session) {
     }
     updateSelectInput(session, "year", choices = c("All", unique(data.full()$Election_Year)))
     updateSelectInput(session, "party", choices = c("All", unique(data.full()$General_Party)))
-    updateSelectizeInput(session, "candidate", choices = c("All", unique(data.selected()$Candidate)), server = TRUE)
+    updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
+    
   })
   
   observeEvent(input$year, {
     if(input$election != 'Loading...') {
-      updateSelectizeInput(session, "candidate", choices = c("All", unique(data.selected()$Candidate)), server = TRUE)
+      updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
     }
   })
   
   observeEvent(input$party, {
     if(input$election != 'Loading...') {
-      updateSelectizeInput(session, "candidate", choices = c("All", unique(data.selected()$Candidate)), server = TRUE)
+      updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
     }
   })
   
-  
   map.output <- eventReactive(input$do, {
-    out.map <- data.selected() %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+    candidate.filtered <- candidates()
+    if(input$candidate != "" && input$candidate != "All") {
+      candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+    }
+    out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
     out.map <- left_join(out.map, city.locations)
     return(out.map)
   })
   
-    output$map <- renderLeaflet({
-      if(input$election != "Loading...") {
-        # print(data.selected())
-        # out.map <- data.selected() %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
-        # out.map <- left_join(out.map, city.locations)
-        out.map <- map.output()
-        out.map$size <- ntile(out.map$Amount, 10) 
-        
-        labels <- sprintf(
-          "<strong>%s, %s</strong><br/>$%g in Contributions<br/>%s",
-          out.map$City, out.map$State, out.map$Amount, out.map$General_Party
-        ) %>% lapply(htmltools::HTML) 
-        
-        factpal <- colorFactor(c("blue", "red", "green"), domain = c("Democratic", "Republican", "Third-Party"))
-        
-        leaflet(out.map) %>% addTiles() %>%
-          setView(-96, 37.8, 4) %>%
-          addProviderTiles(providers$CartoDB.DarkMatter) %>%
-          addCircleMarkers(
-            ~lon, ~lat,
-            radius = ~size,
-            stroke = FALSE, fillOpacity = 0.7,
-            label = labels,
-            color = ~factpal(General_Party)
-          ) %>%
-          addLegend("bottomright", pal = factpal, values = ~General_Party,
-                    title = "Est. GDP (2010)",
-                    labFormat = labelFormat(prefix = "$"),
-                    opacity = 1
-          )
-      } else {
-        leaflet() %>% addTiles() %>%
-          setView(-96, 37.8, 4) %>%
-          addProviderTiles(providers$CartoDB.DarkMatter) 
-      }
-    })
+  output$map <- renderLeaflet({
+    if(input$election != "Loading...") {
+      BuildScatterMap(map.output())
+    } else {
+      leaflet() %>% addTiles() %>%
+        setView(-96, 37.8, 4) %>%
+        addProviderTiles(providers$CartoDB.DarkMatter) 
+    }
+  })
   
   
 })

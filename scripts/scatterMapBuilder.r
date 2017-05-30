@@ -19,30 +19,29 @@ library(sp)
 
 # Pass in dataframe with df, colnames of lat, long, label string,
 # df should be: state, city, Amount, lat, long, color
-BuildScatterMap <- function(df, lat = "lat", lon = "lon", label = "label", color = "color") {
-  lat.equation <- paste0('~', lat)
-  lon.equation <- paste0('~', lon)
-  color.equation <- paste0('~', color)
-  
-  df$size <- ntile(df$Amount, 10) 
+BuildScatterMap <- function(out.map) {
+  out.map$size <- ntile(out.map$Amount, 10) 
   
   labels <- sprintf(
-    label,
-    df$City, df$State, df$Amount, df$General_Party
+    "<strong>%s, %s</strong><br/>$%g in Contributions<br/>%s",
+    out.map$City, out.map$State, out.map$Amount, out.map$General_Party
   ) %>% lapply(htmltools::HTML) 
   
   factpal <- colorFactor(c("blue", "red", "green"), domain = c("Democratic", "Republican", "Third-Party"))
-  #qpal <- colorQuantile("RdYlBu", eval(parse(text = paste0("df$",color))), n = 5)
   
-  leaflet(df) %>% addTiles() %>%
+  leaflet(out.map) %>% addTiles() %>%
     setView(-96, 37.8, 4) %>%
     addProviderTiles(providers$CartoDB.DarkMatter) %>%
     addCircleMarkers(
-      eval(parse(text = lon.equation)), eval(parse(text = lat.equation)),
+      ~lon, ~lat,
       radius = ~size,
       stroke = FALSE, fillOpacity = 0.7,
       label = labels,
       color = ~factpal(General_Party)
     ) %>%
-    addLegend(pal = factpal, Amounts = ~General_Party, opacity = 1)
+    addLegend("bottomright", pal = factpal, values = ~General_Party,
+              title = "Party Affiliation",
+              labFormat = labelFormat(prefix = ""),
+              opacity = 1
+    ) %>% return()
 }
