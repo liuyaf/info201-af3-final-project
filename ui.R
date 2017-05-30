@@ -3,7 +3,7 @@
 # Assignment 8
 # ui.R file for building user interface appearance for data visualization of 
 # the Cereal data.
-
+library(leaflet)
 library(shiny)
 library(plotly)
 library(httr)

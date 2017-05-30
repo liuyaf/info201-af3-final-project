@@ -16,8 +16,15 @@ BuildPieChart <- function(house.results.temp, min, max) {
   data.graph <- data.frame("Won/Lost" = c("Won", "Lost"), "Results" = c(num.winners, num.losers), "Percentages" = c(perc.won, perc.lost))
   percent <- num.winners / total.rows
 
+<<<<<<< HEAD
    pie.results <- plot_ly(data.graph, labels = ~Won.Lost, values = ~Percentages, type = 'pie') %>%
      layout(title = 'Politicians Election Results Based On Money Raised', width = 850, height = 850,
+=======
+   pie.results <- plot_ly(data.graph, labels = ~Won.Lost, values = ~Percentages, type = 'pie', width = 300, height = 300,
+                         hoverinfo = 'text', 
+                         text = ~paste0("Won/Lost = ", Won.Lost, " ,", " Percent = ", round(Percentages, digits = 2)*100, "%" )) %>%
+     layout(title = 'Politicians Election Results Based On Money Raised',
+>>>>>>> changes to the election pie chart
             xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
   
