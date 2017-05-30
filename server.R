@@ -7,10 +7,14 @@ library(plotly)
 library(shiny)
 library(dplyr)
 library(leaflet)
+library(httr)
+library(jsonlite)
 
 
 max_plots <- 5
 source("./scripts/scatterMapBuilder.r")
+source('./scripts/readFile.R')
+source('./scripts/mixPlot.r')
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
 out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFactors = FALSE))
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))

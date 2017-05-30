@@ -8,6 +8,7 @@ library(shiny)
 library(plotly)
 library(httr)
 library(leaflet)
+library(jsonlite)
 
 shinyUI(navbarPage("Political Bidding", 
                    # Tab Panel will show a grouped representation of the cereals based on input from
