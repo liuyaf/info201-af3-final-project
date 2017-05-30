@@ -46,7 +46,7 @@ BuildMap <- function(map.df) {
   )
   
   # build map
-  map <- map.df %>% plot_geo(lat = ~latitude, lon = ~longitude) %>% 
+  map <- map.df %>% plot_geo(lat = ~Latitude, lon = ~Longitude) %>% 
     add_markers(
       hoverinfo = 'text',
       size = ~total, color = ~total, opacity = 0.8,
