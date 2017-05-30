@@ -4,31 +4,31 @@ library(ggmap)
 library(dplyr)
 library(sp)
 
-df <- as.data.frame(read.csv("../data/WashingtonSenateContributions.csv", stringsAsFactors = FALSE))
-locations <- as.data.frame(read.csv("../data/zip_codes_states.csv",stringsAsFactors = FALSE))
-locations$city <- toupper(locations$city)
-
-df.2 <- df %>% group_by(State, City, General_Party)  %>% summarise(value = sum(Amount), records = n())
-
-locations.2 <- locations %>% group_by(state, city) %>% summarise(lat = min(latitude), lon = min(longitude))
-
-known <- left_join(df.2, locations.2, by = c("State" = "state", "City" = "city"))
-
-BuildScatterMap(known, lat = "lat", lon = "lon", label = "<strong>%s, 
-                %s</strong><br/>$%g in Contributions<br/>%s", color = "General_Party")
+# df <- as.data.frame(read.csv("../data/WashingtonSenateContributions.csv", stringsAsFactors = FALSE))
+# locations <- as.data.frame(read.csv("../data/zip_codes_states.csv",stringsAsFactors = FALSE))
+# locations$city <- toupper(locations$city)
+# 
+# df.2 <- df %>% group_by(State, City, General_Party)  %>% summarise(Amount = sum(Amount), records = n())
+# 
+# locations.2 <- locations %>% group_by(state, city) %>% summarise(lat = min(latitude), lon = min(longitude))
+# 
+# known <- left_join(df.2, locations.2, by = c("State" = "state", "City" = "city"))
+# 
+# BuildScatterMap(known, lat = "lat", lon = "lon", label = "<strong>%s, 
+#                 %s</strong><br/>$%g in Contributions<br/>%s", color = "General_Party")
 
 # Pass in dataframe with df, colnames of lat, long, label string,
-# df should be: state, city, value, lat, long, color
+# df should be: state, city, Amount, lat, long, color
 BuildScatterMap <- function(df, lat = "lat", lon = "lon", label = "label", color = "color") {
   lat.equation <- paste0('~', lat)
   lon.equation <- paste0('~', lon)
   color.equation <- paste0('~', color)
   
-  df$size <- ntile(df$value, 10) 
+  df$size <- ntile(df$Amount, 10) 
   
   labels <- sprintf(
     label,
-    df$City, df$State, df$value, df$General_Party
+    df$City, df$State, df$Amount, df$General_Party
   ) %>% lapply(htmltools::HTML) 
   
   factpal <- colorFactor(c("blue", "red", "green"), domain = c("Democratic", "Republican", "Third-Party"))
@@ -44,5 +44,5 @@ BuildScatterMap <- function(df, lat = "lat", lon = "lon", label = "label", color
       label = labels,
       color = ~factpal(General_Party)
     ) %>%
-    addLegend(pal = factpal, values = ~General_Party, opacity = 1)
+    addLegend(pal = factpal, Amounts = ~General_Party, opacity = 1)
 }

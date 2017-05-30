@@ -6,6 +6,7 @@
 
 library(shiny)
 library(plotly)
+library(httr)
 
 shinyUI(navbarPage("Political Bidding",
                    # Tab Panel will show a grouped representation of the cereals based on input from
@@ -19,7 +20,8 @@ shinyUI(navbarPage("Political Bidding",
                               selectizeInput(
                                 'candidate', 'Candidate', choices = c("Loading..."),
                                 multiple = FALSE
-                              )
+                              ),
+                              actionButton("do", "Click Me")
                             ),
                             
                             mainPanel(
@@ -39,12 +41,12 @@ shinyUI(navbarPage("Political Bidding",
                               sidebarPanel(
                                 
                                 # Input box to collect candidate's name
-                                textInput("canname", label = h3("Candidate Name"), value = "Enter name..."),
+                                textInput("canname", label = h3("Candidate Name (Defualt MURRAY, PATTY"), value = "MURRAY, PATTY"),
                                 
                                 # radio butttons that can group barchart by industry
                                 radioButtons("colorvar", label = h3("Color Barchart by Industry"),
                                              choices = list("Yes" = '~industry', "No" = 'NULL'), 
-                                             selected = 1)
+                                             selected = 'NULL')
                               ),
                               
                               # Use plotlyOutput to show the scatter plot
