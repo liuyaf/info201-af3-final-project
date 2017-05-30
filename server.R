@@ -25,4 +25,11 @@ shinyServer(function(input, output, session) {
     return(BuildPie(industry.candidate))
   })
   
+  output$ui <- renderUI({
+   if (input$govBranch == "Senate") {
+     return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 30122024, value = c(0, 1000000)))
+   } else {
+     return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 80122596, value = c(0, 1000000)))
+   }
+  })
 })
