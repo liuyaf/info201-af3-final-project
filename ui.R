@@ -20,7 +20,8 @@ shinyUI(navbarPage("Political Bidding",
                               selectizeInput(
                                 'candidate', 'Candidate', choices = c("Loading..."),
                                 multiple = FALSE
-                              )
+                              ),
+                              actionButton("do", "Click Me")
                             ),
                             
                             mainPanel(
