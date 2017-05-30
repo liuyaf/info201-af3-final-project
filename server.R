@@ -7,11 +7,11 @@ library(plotly)
 library(shiny)
 
 
+
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
 out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFactors = FALSE))
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))
 city.locations <- as.data.frame(read.csv("./data/mapping/city_locations.csv", stringsAsFactors = FALSE))
-out <- out.pres
 
 
 # Build shinyServer
@@ -42,41 +42,47 @@ shinyServer(function(input, output, session) {
   
   #######################################MAPPING EVENTS#############################################
   
-  observeEvent(input$election, {
-    if(input$election == 'Loading...') {
-      updateSelectInput(session, "election", choices = c("Presidential", "Senate", "House of Representatives"))
-      out <- out.pres
-    } else if(input$election == "Senate") {
-      out <- out.senate
-    } else if(input$election == 'House of Representatives') {
-      out <- out.house
+  data.full <- reactive({
+    if(input$election != 'Loading...'){
+      if(input$election == 'Presidential') {
+        return(out.pres)
+      } else if(input$election == 'Senate'){
+        return(out.senate)
+      } else if(input$election == 'House of Representatives') {
+        return(out.house)  
+      }
     } else {
-      out <- out.pres
-    }
-    
-    updateSelectInput(session, "year", choices = unique(out$Election_Year))
-    updateSelectInput(session, "party", choices = unique(out$General_Party))
-    
-    
-    if(input$year != "Loading..." && input$party != "Loading...") {
-      out.filtered <- out %>% filter_(paste0('Election_Year == "', input$year,'"'),paste0('General_Party == "', input$party,'"'))
-      updateSelectizeInput(session, "candidate", choices = unique(out.filtered$Candidate), server = TRUE)
+      ###Return Loading Data Frame
+      loading <- data.frame(c("Loading..."), c("Loading..."), c("Loading..."))
+      colnames(loading) <- c("Election_Year", "General_Party", "Candidate")
+      return(loading)
     }
   })
   
+  data.selected <- reactive({
+    out.filtered <- data.full() %>% filter_(paste0('Election_Year == "', input$year,'"'), paste0('General_Party == "', input$party,'"'))
+    return(out.filtered)
+  })
+  
+  observeEvent(input$election, {
+    if(input$election == 'Loading...') {
+      updateSelectInput(session, "election", choices = c("Presidential", "Senate", "House of Representatives"), selected = "Presidential")
+    }
+    updateSelectInput(session, "year", choices = unique(data.full()$Election_Year))
+    updateSelectInput(session, "party", choices = unique(data.full()$General_Party))
+    updateSelectizeInput(session, "candidate", choices = unique(data.selected()$Candidate), server = TRUE)
+  })
+  
   observeEvent(input$year, {
-    if(input$year != 'Loading...' && input$party != "Loading...") {
-      out.filtered <- out %>% filter_(paste0('Election_Year == "', input$year,'"'),paste0('General_Party == "', input$party,'"'))
-      updateSelectizeInput(session, "candidate", choices = unique(out.filtered$Candidate), server = TRUE)
+    if(input$election != 'Loading...') {
+      updateSelectizeInput(session, "candidate", choices = unique(data.selected()$Candidate), server = TRUE)
     }
   })
   
   observeEvent(input$party, {
-    if(input$year != 'Loading...' && input$party != "Loading...") {
-      out.filtered <- out %>% filter_(paste0('Election_Year == "', input$year,'"'),paste0('General_Party == "', input$party,'"'))
-      updateSelectizeInput(session, "candidate", choices = unique(out.filtered$Candidate), server = TRUE)
+    if(input$election != 'Loading...') {
+      updateSelectizeInput(session, "candidate", choices = unique(data.selected()$Candidate), server = TRUE)
     }
-    print(input$candidate)
   })
   
 })
