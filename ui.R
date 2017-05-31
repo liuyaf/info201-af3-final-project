@@ -19,7 +19,6 @@ shinyUI(navbarPage("Political Bidding",
                    tabPanel("2016 Election",
                             
                             sidebarPanel(
-                              sliderInput("n", "Number of plots", value=1, min=1, max=5),
                               selectInput("election", "Election Type:", c("Loading...")),
                               selectInput("year", "Year:", c("Loading...")),
                               selectInput("party", "General Party:", c("Loading...")),
@@ -27,11 +26,9 @@ shinyUI(navbarPage("Political Bidding",
                                 'candidate', 'Candidate', choices = c("Loading..."),
                                 multiple = FALSE
                               ),
-                              radioButtons("show", "Show Tables:",
-                                             c("Yes" = "yes",
-                                               "No" = "no")),
-                              uiOutput("go_buttons"),
-                              width = 2
+                              actionButton("update", "Update Plot"),
+                              actionButton("new", "Create New Plot"),
+                              width = 3
                             ),
                             mainPanel(
                               uiOutput("goTab")

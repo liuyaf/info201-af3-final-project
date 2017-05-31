@@ -10,8 +10,6 @@ library(leaflet)
 library(httr)
 library(jsonlite)
 
-
-max_plots <- 5
 source("./scripts/scatterMapBuilder.r")
 source('./scripts/readFile.R')
 source('./scripts/mixPlot.r')
@@ -20,7 +18,8 @@ out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFa
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))
 city.locations <- as.data.frame(read.csv("./data/mapping/city_location.csv", stringsAsFactors = FALSE))
 city.locations <- city.locations %>% group_by(State, City, County) %>% summarise(lat = min(Latitude), lon = min(Longitude))
-plots_made <- 0
+n_tabs <- 0
+max_plots <- 10
 
 
 # Build shinyServer
@@ -76,22 +75,6 @@ shinyServer(function(input, output, session) {
   })
   
 #######################################MAPPING EVENTS#############################################
-  # Important! : creationPool should be hidden to avoid elements flashing before they are moved.
-  #              But hidden elements are ignored by shiny, unless this option below is set.
-  output$creationPool <- renderUI({})
-  outputOptions(output, "creationPool", suspendWhenHidden = FALSE)
-  # End Important
-  
-  # Important! : This is the make-easy wrapper for adding new tabPanels.
-  addTabToTabset <- function(Panels, tabsetName){
-    titles <- lapply(Panels, function(Panel){return(Panel$attribs$title)})
-    Panels <- lapply(Panels, function(Panel){Panel$attribs$title <- NULL; return(Panel)})
-    
-    output$creationPool <- renderUI({Panels})
-    session$sendCustomMessage(type = "addTabToTabset", message = list(titles = titles, tabsetName = tabsetName))
-  }
-  # End Important
-  
   data.full <- reactive({
     if(input$election != 'Loading...'){
       if(input$election == 'Presidential') {
@@ -141,86 +124,69 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$plots <- renderUI({
-    plot_output_list <- lapply(1:input$n, function(i) {
-      plotname <- paste("plot", i, sep="")
-      leafletOutput(plotname)
-    })
-    
-    # Convert the list to a tagList - this is necessary for the list of items
-    # to display properly.
-    do.call(tagList, plot_output_list)
+  num_tabs <- eventReactive(input$new, {
+    n_tabs <<- n_tabs + 1
+    return(n_tabs)
+  })
+  
+  observeEvent(num_tabs(), {
+    updateTabsetPanel(session, "tabs", selected = paste0("Map ", n_tabs))
+    output[[paste0("title",n_tabs)]] <- renderText("New Plot")
   })
   
   output$goTab <- renderUI({
-    tab_output_list <- lapply(1:input$n, function(i){
+    tab_output_list <- lapply(1:num_tabs(), function(i){
       tabname <- paste("Map ", i, sep="")
       tabPanel(tabname,
-               h2("New Plot"),
+               h3(textOutput(paste0("title",i))),
                leafletOutput(paste0("plot",i)),
                hr(),
                h2("Raw Data"),
                dataTableOutput(paste0("table",i))) 
     })
-    do.call(tabsetPanel, tab_output_list)
+    args = c(tab_output_list, list(id = "tabs"))
+    do.call(tabsetPanel, args)
   })
   
-  
-  output$tabs <- renderUI({
-    tab_output_list <- lapply(1:input$n, function(i){
-      tabname <- paste("tab", i, sep="")
-      tabPanel(tabname, 
-          dataTableOutput(paste0("table",i))) 
+  observeEvent(input$update, {
+    tab <- input$tabs
+    i <- substring(tab, nchar(tab))
+    
+    output[[paste0("title",i)]] <- renderText({
+      isolate({
+        return(input$candidate)        
+      })
     })
-    do.call(tabsetPanel, tab_output_list)
-  })
-  
-  # to store observers and make sure only once is created per button
-  
-  obsList <- list()
-  
-  output$go_buttons <- renderUI({
-    buttons <- as.list(1:input$n)
-    buttons <- lapply(buttons, function(i) {
-      btName <- paste0("btn",i)
-      # creates an observer only if it doesn't already exists
-      
-      if (is.null(obsList[[btName]])) {
-        # make sure to use <<- to update global variable obsList
-        obsList[[btName]] <<- observeEvent(input[[btName]], {
-            output[[paste0("plot",i)]] <- renderLeaflet({
-              isolate({
-                candidate.filtered <- candidates()
-                
-                if(input$candidate != "" && input$candidate != "All") {
-                  candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
-                }
-                out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
-                out.map <- left_join(out.map, city.locations)
-                
-                if(input$election != "Loading...") {
-                  BuildScatterMap(out.map)
-                } else {
-                  leaflet() %>% addTiles() %>%
-                    setView(-96, 37.8, 4) %>%
-                    addProviderTiles(providers$CartoDB.DarkMatter) 
-                }
-              })#end isolate
-          }) #end renderLeaflet
-          output[[paste0("table",i)]] <- renderDataTable({
-            isolate({
-              candidate.filtered <- candidates()
-              
-              if(input$candidate != "" && input$candidate != "All") {
-                candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
-              }
-              out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
-              return(out.map)
-            })
-          })
-        }) #end observeEvent
-      }
-      actionButton(btName,paste("Update Plot ",i))
+    
+    output[[paste0("plot",i)]] <- renderLeaflet({
+      isolate({
+        candidate.filtered <- candidates()
+
+        if(input$candidate != "" && input$candidate != "All") {
+          candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+        }
+        out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+        out.map <- left_join(out.map, city.locations)
+
+        if(input$election != "Loading...") {
+          BuildScatterMap(out.map)
+        } else {
+          leaflet() %>% addTiles() %>%
+            setView(-96, 37.8, 4) %>%
+            addProviderTiles(providers$CartoDB.DarkMatter)
+        }
+      })#end isolate
+    }) #end renderLeaflet
+    output[[paste0("table",i)]] <- renderDataTable({
+      isolate({
+        candidate.filtered <- candidates()
+
+        if(input$candidate != "" && input$candidate != "All") {
+          candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+        }
+        out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+        return(out.map)
+      })
     })
   })
   
@@ -234,7 +200,7 @@ shinyServer(function(input, output, session) {
       plotname <- paste("plot", my_i, sep="")
       tabname <- paste("table", my_i, sep="")
       
-      output[[tabname]] <- renderDataTable(iris)
+      output[[tabname]] <- renderDataTable(NULL)
       
       output[[plotname]] <- renderLeaflet({
           leaflet() %>% addTiles() %>%
@@ -243,5 +209,4 @@ shinyServer(function(input, output, session) {
       })
     })
   }
-  
 })
