@@ -28,11 +28,11 @@ shinyUI(navbarPage("Political Bidding",
                               ),
                               actionButton("update", "Update Plot"),
                               actionButton("new", "Create New Plot"),
-                              width = 3
+                              width = 4
                             ),
                             mainPanel(
                               uiOutput("goTab")
-                            ) # end fluidRow  
+                            ) # end fluidRow 
                       ),
                 
                    

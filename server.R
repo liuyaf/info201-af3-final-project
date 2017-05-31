@@ -150,13 +150,15 @@ shinyServer(function(input, output, session) {
   observeEvent(num_tabs(), {
     updateTabsetPanel(session, "tabs", selected = paste0("Map ", n_tabs))
     output[[paste0("title",n_tabs)]] <- renderText("New Plot")
+    output[[paste0("query",n_tabs)]] <- renderText("")
   })
   
   output$goTab <- renderUI({
     tab_output_list <- lapply(1:num_tabs(), function(i){
       tabname <- paste("Map ", i, sep="")
       tabPanel(tabname,
-               h3(textOutput(paste0("title",i))),
+               h2(textOutput(paste0("title",i))),
+               h4(textOutput(paste0("query",i))),
                leafletOutput(paste0("plot",i)),
                hr(),
                h2("Raw Data"),
@@ -173,6 +175,12 @@ shinyServer(function(input, output, session) {
     output[[paste0("title",i)]] <- renderText({
       isolate({
         return(input$candidate)        
+      })
+    })
+    
+    output[[paste0("query", i)]] <- renderText({
+      isolate({
+        return(paste0("Election: ", input$election ,", Year: ", input$year, ", Party: ", input$party))
       })
     })
     
