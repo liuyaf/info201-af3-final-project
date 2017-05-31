@@ -53,9 +53,10 @@ shinyUI(navbarPage("Political Bidding",
                                 # textInput("canname", label = h3("Candidate Name"), value = "MURRAY, PATTY"),
                                 
                                 # radio butttons that can group barchart by industry
-                                radioButtons("colorvar", label = h3("Color Barchart by Industry"),
+                                radioButtons("colorvar", label = h3("Group Barchart by Industry"),
                                              choices = list("Yes" = '~industry', "No" = 'NULL'), 
-                                             selected = 'NULL')
+                                             selected = 'NULL'),
+                                actionButton('update', 'Submit')
                               ),
                               
                               # Use plotlyOutput to show the scatter plot

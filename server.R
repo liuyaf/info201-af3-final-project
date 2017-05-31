@@ -2,6 +2,8 @@
 # Info 201 Section AF
 # Final Project
 
+
+# load libraries
 library(tools)
 library(plotly)
 library(shiny)
@@ -10,35 +12,51 @@ library(leaflet)
 library(httr)
 library(jsonlite)
 
+
+# source function file
+
 source("./scripts/scatterMapBuilder.r")
 source('./scripts/readFile.R')
 source('./scripts/mixPlot.r')
+
+# read csv file and store global variable
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
 out.house <- as.data.frame(read.csv("./data/mapping/House_City.csv", stringsAsFactors = FALSE))
 out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFactors = FALSE))
 city.locations <- as.data.frame(read.csv("./data/mapping/city_location.csv", stringsAsFactors = FALSE))
 city.locations <- city.locations %>% group_by(State, City, County) %>% summarise(lat = min(Latitude), lon = min(Longitude))
+
 n_tabs <- 0
 max_plots <- 10
+
 
 
 # Build shinyServer
 shinyServer(function(input, output, session) {
   
-  output$bar.con <- renderPlotly({
-    con.to.candidate <- GetContributor(input$canname)
-    return(BuildBarchart(con.to.candidate, input$colorvar))
+  # Washington Candidates contribution part
+  # the observeEvent listens the submit button and updates the name
+  # of candidate 
+  observeEvent(input$update, {
+    
+    canname <- input$canname
+    output$bar.con <- renderPlotly({
+      con.to.candidate <- GetContributor(canname)
+      return(BuildBarchart(con.to.candidate, input$colorvar))
+    })
+    
+    output$map.con <- renderPlotly({
+      con.to.candidate <- GetContributor(canname)
+      return(BuildMap(con.to.candidate))
+    })
+    
+    output$pie.con <- renderPlotly({
+      industry.candidate <- GetIndustryPercent(canname)
+      return(BuildPie(industry.candidate))
+    })
   })
   
-  output$map.con <- renderPlotly({
-    con.to.candidate <- GetContributor(input$canname)
-    return(BuildMap(con.to.candidate))
-  })
-  
-  output$pie.con <- renderPlotly({
-    industry.candidate <- GetIndustryPercent(input$canname)
-    return(BuildPie(industry.candidate))
-  })
+ 
   
   output$ui <- renderUI({
    if (input$govBranch == "Senate") {

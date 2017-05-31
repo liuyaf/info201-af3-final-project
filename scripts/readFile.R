@@ -75,20 +75,23 @@ GetIndustryPercent <- function(can.name) {
   # Use fromJSON to parse information
   response.content <- content(response, 'text')
   body.data <- fromJSON(response.content)
-  df1 <- flatten(body.data$records)
+  df <- flatten(body.data$records)
   
-  # query 2nd page
-  query.params$p <- 1
-  response <- GET(base.uri, query = query.params)
+  # query 2nd page if it has
+  if (body.data$metaInfo$paging$totalPages != 1) {
+    query.params$p <- 1
+    response <- GET(base.uri, query = query.params)
+    
+    # parse response
+    response.content <- content(response, 'text')
+    body.data <- fromJSON(response.content)
+    df2 <- flatten(body.data$records)
+    
+    # bind and wrangle the dataframe
+    df <- bind_rows(df,df2)
+  }
   
-  # parse response
-  response.content <- content(response, 'text')
-  body.data <- fromJSON(response.content)
-  df2 <- flatten(body.data$records)
-  
-  # bind and wrangle the dataframe
-  df <- bind_rows(df1,df2)
-  
+  # wrangle the data
   df <- df %>% select(Broad_Sector.Broad_Sector, `#_of_Records.#_of_Records`,`Total_$.Total_$`)
   colnames(df) <- c('industry', 'records', 'total')
   df$records <- as.integer(df$records)

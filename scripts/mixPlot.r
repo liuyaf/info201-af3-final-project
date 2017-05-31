@@ -46,15 +46,14 @@ BuildMap <- function(map.df) {
   )
   
   # build map
-  map <- map.df %>% plot_geo(lat = ~Latitude, lon = ~Longitude) %>%
+  map <- map.df %>% plot_geo(lat = ~Latitude, lon = ~Longitude) %>% 
     add_markers(
       hoverinfo = 'text',
       size = ~total, color = ~total, opacity = 0.8,
-      text = ~paste0(name, ' <br> ',
-                     industry, ' <br> ', '# of records ' ,records, ' <br> ',
-                     '$',total)) %>%
+      text = ~paste0(name, ' <br>', 
+                     industry, ' <br> ', '# of records' ,records, ' <br> ',
+                     '$',total)) %>% 
     layout(title = 'Location of Top 100 Contribution<br />(Hover for details)', geo = g)
-
   
   return(map)
 }
