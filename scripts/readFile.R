@@ -5,14 +5,16 @@ library(dplyr)
 library(jsonlite)
 
 # read candidate file and wrangle the data
-can.wa.16.raw <- read.csv('./data/2016_WA_Candidates.csv', stringsAsFactors = FALSE)
+# can.wa.16.raw <- read.csv('./data/2016_WA_Candidates.csv', stringsAsFactors = FALSE)
 
-can.wa.16 <- can.wa.16.raw %>% select(Candidate_Entity.id, Candidate, Election_Status, Status_of_Candidate,
-                                      Specific_Party, General_Party, Office_Sought, Num_of_Records, Total_dollar)
+# can.wa.16 <- can.wa.16.raw %>% select(Candidate_Entity.id, Candidate, Election_Status, Status_of_Candidate,
+                                      # Specific_Party, General_Party, Office_Sought, Num_of_Records, Total_dollar)
+# write.csv(can.wa.16, file = './data/2016_WA_Candidates.csv', row.names = FALSE)
+can.wa.16 <- read.csv('./data/2016_WA_Candidates.csv', stringsAsFactors = FALSE)
 
-
-zip <- read.csv('./data/mapping/city_locations.csv', stringsAsFactors = FALSE)
+zip <- read.csv('./data/mapping/zipcode_lat_lon.csv', stringsAsFactors = FALSE)
 zip <- zip %>% select(Zip_Code,Latitude,Longitude)
+
 
 # stores global variable
 base.uri <- 'http://api.followthemoney.org/'
@@ -57,7 +59,6 @@ GetContributor <- function(can.name) {
   return(df)
 }
 
-a <- GetContributor('MURRAY, PATTY')
 
 # the function takes a candidate name as variable and returns a dataframe
 # containing industry of all contribution to the candidate and the total number of contribution
@@ -98,5 +99,4 @@ GetIndustryPercent <- function(can.name) {
   return(df)
 }
 
-b <- GetIndustryPercent('MURRAY, PATTY')
 
