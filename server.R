@@ -93,6 +93,11 @@ shinyServer(function(input, output, session) {
   })
   
 #######################################MAPPING EVENTS#############################################
+# # # # # # # # # # # # # # # # # # # Matthew Li, AF3 # # # # # # # # # # # # # # # # # # # # # #
+  
+  # Reactive data value. Provides all served from either Presidential, Senate, or House of representative data
+  # frames stored in the global variable fields. 
+  # Determines if the csv files are completely loaded, if not, loading dataframe is produced and returned.
   data.full <- reactive({
     if(input$election != 'Loading...'){
       if(input$election == 'Presidential') {
@@ -103,13 +108,15 @@ shinyServer(function(input, output, session) {
         return(out.house)  
       }
     } else {
-      ###Return Loading Data Frame
+      # Produce a loading data frame for other input fields to be filled.
       loading <- data.frame(c("Loading..."), c("Loading..."), c("Loading..."), c("Loading..."), c("Loading..."))
       colnames(loading) <- c("Election_Year", "General_Party", "Candidate", "State", "City")
       return(loading)
     }
   })
   
+  # Reactive data value. Provides the filtered version of data.full() that is filtered. Filters by year and party 
+  # then returns the dataframe
   candidates <- reactive({
     out.filtered <- data.full()
     if(input$year != "All"){
@@ -121,6 +128,9 @@ shinyServer(function(input, output, session) {
     return(out.filtered)
   })
   
+  # ObserveEvent for select user input for election. Initially set to loading. When csv files are completely filled,
+  # input field is repopulated with optiuons for Presidential, Senate, and House of Representatives. On observed event,
+  # updates the fields for the year, party, and candidiate inputs.
   observeEvent(input$election, {
     if(input$election == 'Loading...') {
       updateSelectInput(session, "election", choices = c("Presidential", "Senate", "House of Representatives"), selected = "Presidential")
@@ -130,29 +140,40 @@ shinyServer(function(input, output, session) {
     updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
   })
   
+  # ObserveEvent for select user input for year. Shows years avaliable given the data.full() data. On observed event,
+  # updates the fields for the candidate input by recalling the reactive data candidates()
   observeEvent(input$year, {
     if(input$election != 'Loading...') {
       updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
     }
   })
   
+  # ObserveEvent for select user input for election Shows years avaliable given the data.full() data. On observed event,
+  # updates the fields for the candidate input by recalling the reactive data candidates()
   observeEvent(input$party, {
     if(input$election != 'Loading...') {
       updateSelectizeInput(session, "candidate", choices = c("All", unique(candidates()$Candidate)), server = TRUE)
     }
   })
   
+  # reactive variable for increasing the number of tabs to be shown. Stops at the max_plot value (10)
   num_tabs <- eventReactive(input$new, {
-    n_tabs <<- n_tabs + 1
+    if(n_tabs < max_plots) {
+      n_tabs <<- n_tabs + 1
+    }
     return(n_tabs)
   })
   
+  # ObserveEvent for opening a new tab. Observes for change in num_tabs() and renders the title text for
+  # the new tab. Additionally, opens the new tab so user is shown the new tab on press.
   observeEvent(num_tabs(), {
     updateTabsetPanel(session, "tabs", selected = paste0("Map ", n_tabs))
     output[[paste0("title",n_tabs)]] <- renderText("New Plot")
     output[[paste0("query",n_tabs)]] <- renderText("")
   })
   
+  # RenderUI output. Renders the number of tabs that the user produced. The tabs are placed inside a tabsetPanel
+  # and each include a h2 title, h4 query description, map output (leaflet), and data output.
   output$goTab <- renderUI({
     tab_output_list <- lapply(1:num_tabs(), function(i){
       tabname <- paste("Map ", i, sep="")
@@ -168,22 +189,28 @@ shinyServer(function(input, output, session) {
     do.call(tabsetPanel, args)
   })
   
+  # ObserveEvent for the update button. Update button determines which tab is currently in view
+  # and updates based on the user's input selected.
   observeEvent(input$update, {
+    #Determine tab to update
     tab <- input$tabs
     i <- substring(tab, nchar(tab))
     
+    # Update tab title
     output[[paste0("title",i)]] <- renderText({
       isolate({
         return(input$candidate)        
       })
     })
     
+    # Update query description
     output[[paste0("query", i)]] <- renderText({
       isolate({
         return(paste0("Election: ", input$election ,", Year: ", input$year, ", Party: ", input$party))
       })
     })
     
+    # Update map plot
     output[[paste0("plot",i)]] <- renderLeaflet({
       isolate({
         candidate.filtered <- candidates()
@@ -203,6 +230,8 @@ shinyServer(function(input, output, session) {
         }
       })#end isolate
     }) #end renderLeaflet
+    
+    # Update datatable rendered.
     output[[paste0("table",i)]] <- renderDataTable({
       isolate({
         candidate.filtered <- candidates()
@@ -216,7 +245,7 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  # render initial map plots
+  # For loop required to initially render all output plots and tables. 
   for (i in 1:max_plots) {
     # Need local so that each item gets its own number. Without it, the value
     # of i in the renderPlot() will be the same across all instances, because

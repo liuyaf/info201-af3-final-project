@@ -14,10 +14,12 @@ install.packages("ggmap")
 wa.candidate <- read.csv('./data/2016_WA_Candidates.csv')
 
 shinyUI(navbarPage("Political Bidding", 
-                   # Tab Panel will show a grouped representation of the cereals based on input from
-                   # the user via the 2 selectInput widgets, graph's marker size is based on frequency
-                   tabPanel("2016 Election",
+                   # Tab Panel will show a user interface for producing 
+                   tabPanel("2016 Election", 
                             
+                            # Sidebar Panel holds the user selection inputs. Initial values of 
+                            # the widgets are set to "Loading..." and updated by server.R once 
+                            # csv files are completely read.
                             sidebarPanel(
                               selectInput("election", "Election Type:", c("Loading...")),
                               selectInput("year", "Year:", c("Loading...")),
@@ -30,11 +32,12 @@ shinyUI(navbarPage("Political Bidding",
                               actionButton("new", "Create New Plot"),
                               width = 4
                             ),
+                            # MainPanel contains uiOutput, uiOutput "goTab" is rendered by the server
+                            # and produces the tab output.
                             mainPanel(
                               uiOutput("goTab")
                             ) # end fluidRow 
                       ),
-                
                    
                    # Tab Panel shows the raw data that the plots are being formed by.
                    tabPanel("Contribution to Candidate",
@@ -95,11 +98,5 @@ shinyUI(navbarPage("Political Bidding",
                               textOutput("about"), width = 12
                             )
                     )
-                   
-                   ###########################Tabset Stuff for Mapping#########################
-                   # Important! : JavaScript functionality to add the Tabs
-                
-                   
-                   
-                   
+
 )) #end shinyUI
