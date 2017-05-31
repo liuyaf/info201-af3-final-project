@@ -10,6 +10,9 @@ library(httr)
 library(leaflet)
 library(jsonlite)
 
+# read the candidate name for selectizeInput
+wa.candidate <- read.csv('./data/2016_WA_Candidates.csv')
+
 shinyUI(navbarPage("Political Bidding", 
                    # Tab Panel will show a grouped representation of the cereals based on input from
                    # the user via the 2 selectInput widgets, graph's marker size is based on frequency
@@ -64,7 +67,10 @@ shinyUI(navbarPage("Political Bidding",
                               sidebarPanel(
                                 
                                 # Input box to collect candidate's name
-                                textInput("canname", label = h3("Candidate Name"), value = "MURRAY, PATTY"),
+                                selectizeInput(
+                                  'canname', label = h3('WA Candidate Name'), choices = wa.candidate$Candidate
+                                ),
+                                # textInput("canname", label = h3("Candidate Name"), value = "MURRAY, PATTY"),
                                 
                                 # radio butttons that can group barchart by industry
                                 radioButtons("colorvar", label = h3("Color Barchart by Industry"),
