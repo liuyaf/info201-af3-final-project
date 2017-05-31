@@ -9,7 +9,7 @@ library(plotly)
 library(httr)
 library(leaflet)
 library(jsonlite)
-install.packages("ggmap")
+
 # read the candidate name for selectizeInput
 wa.candidate <- read.csv('./data/2016_WA_Candidates.csv')
 
