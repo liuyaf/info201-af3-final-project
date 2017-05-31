@@ -37,7 +37,7 @@ shinyServer(function(input, output, session) {
   # Washington Candidates contribution part
   # the observeEvent listens the submit button and updates the name
   # of candidate 
-  observeEvent(input$update, {
+  observeEvent(input$update.can, {
     
     canname <- input$canname
     output$bar.con <- renderPlotly({
