@@ -138,6 +138,20 @@ shinyServer(function(input, output, session) {
     do.call(tagList, plot_output_list)
   })
   
+  output$goTab <- renderUI({
+    tab_output_list <- lapply(1:input$n, function(i){
+      tabname <- paste("Map ", i, sep="")
+      tabPanel(tabname,
+               h2("New Plot"),
+               leafletOutput(paste0("plot",i)),
+               hr(),
+               h2("Raw Data"),
+               dataTableOutput(paste0("table",i))) 
+    })
+    do.call(tabsetPanel, tab_output_list)
+  })
+  
+  
   output$tabs <- renderUI({
     tab_output_list <- lapply(1:input$n, function(i){
       tabname <- paste("tab", i, sep="")
@@ -180,13 +194,15 @@ shinyServer(function(input, output, session) {
               })#end isolate
           }) #end renderLeaflet
           output[[paste0("table",i)]] <- renderDataTable({
-            candidate.filtered <- candidates()
-            
-            if(input$candidate != "" && input$candidate != "All") {
-              candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
-            }
-            out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
-            return(out.map)
+            isolate({
+              candidate.filtered <- candidates()
+              
+              if(input$candidate != "" && input$candidate != "All") {
+                candidate.filtered <- candidate.filtered %>% filter_(paste0('Candidate == "', input$candidate,'"'))
+              }
+              out.map <- candidate.filtered %>% group_by(Candidate, General_Party, State, City) %>% summarise(Amount = sum(Amount))
+              return(out.map)
+            })
           })
         }) #end observeEvent
       }

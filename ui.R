@@ -34,27 +34,10 @@ shinyUI(navbarPage("Political Bidding",
                               width = 2
                             ),
                             mainPanel(
-                              fluidRow(
-                                column(12,
-                                  conditionalPanel(
-                                    condition = "input.show == no",
-                                    column(12,
-                                           uiOutput("plots")
-                                    )
-                                  ),
-                                  conditionalPanel(
-                                    condition = "input.show == 'yes'",
-                                    column(8,
-                                           uiOutput("plots")
-                                    ),
-                                    column(4,
-                                      uiOutput("tabs")
-                                    )
-                                  )
-                                )) # end fluidRow
-                              )
-                            # end mainPanel
-                   ), #end tabPanel 1
+                              uiOutput("goTab")
+                            ) # end fluidRow  
+                      ),
+                
                    
                    # Tab Panel shows the raw data that the plots are being formed by.
                    tabPanel("Contribution to Candidate",
