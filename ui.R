@@ -70,6 +70,7 @@ shinyUI(navbarPage("Political Bidding",
                             titlePanel("Candidate Winning Percentage Based Off Spending"),
                             
                             sidebarPanel(
+                              textOutput("description"),
                               # Radio buttons for either the user to see if they want to see data from the House or the Senate
                               radioButtons("govBranch", label = h3("Select which Branch of Legislation you want to see:"), 
                                            choices = c("House of Representatives", "Senate"), selected = "House of Representatives"),
@@ -81,7 +82,14 @@ shinyUI(navbarPage("Political Bidding",
                               plotlyOutput("electionChart")
                             )
                             
-                   ) # end tabPanel
+                   ), # end tabPanel
+                   
+                   tabPanel("About",
+                            titlePanel("About"),
+                            mainPanel(
+                              textOutput("about"), width = 12
+                            )
+                    )
                    
                    ###########################Tabset Stuff for Mapping#########################
                    # Important! : JavaScript functionality to add the Tabs

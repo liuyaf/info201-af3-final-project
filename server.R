@@ -51,6 +51,12 @@ shinyServer(function(input, output, session) {
   
   source("./scripts/ElectionPieChart.R")
   
+  output$description <- renderText({
+    "This graph helps to visualize a correlation between politician's spending money and their percentage of either losing or winning that 
+    election.  Note that if you scroll to a money range where no pie chart displays, that means we have no data on politicians spending
+    that amount for their campaign."
+  })
+  
   output$electionChart <- renderPlotly({
     if (input$govBranch == "Senate") {
       legislature.branch <- read.csv("data/SenateElection.csv", stringsAsFactors=FALSE)
@@ -59,6 +65,14 @@ shinyServer(function(input, output, session) {
     }
     wanted.data.from.branch <- legislature.branch[,c(13,16,36)]
     return(BuildPieChart(wanted.data.from.branch, input$moneyRange[1], input$moneyRange[2]))
+  })
+  
+  output$about <- renderText({
+    "For our project we decided to use the FollowTheMoney.org dataset where we were able to analyze how money flowed through 
+    our government and to our politicians.  While analyzing the datasets, we had three target questions, in which we have divided it 
+    up among the other three tabs: 1) Who is each politician getting their money from while they are in office?  2) From where are politicians
+    receiving money from? 3)  Is there a correlation between the amount of money a candidate spends campaigning and their changes of winning the
+    election."
   })
   
 #######################################MAPPING EVENTS#############################################
