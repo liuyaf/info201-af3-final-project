@@ -25,7 +25,9 @@ shinyUI(navbarPage("Political Bidding",
                             sidebarLayout(
                               sidebarPanel(
                                 h3("Explore which parts of the country are donating money to specific politicians."),
-                                h5("To use, create new plot."),
+                                h5("To use, create new plot first then update."),
+                                h5("Notice: Democrat Presidential Data Unavaliable"),
+                                hr(),
                                 selectInput("election", "Election Type:", c("Loading...")),
                                 selectInput("year", "Year:", c("Loading...")),
                                 selectInput("party", "General Party:", c("Loading...")),

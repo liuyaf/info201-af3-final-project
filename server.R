@@ -131,7 +131,8 @@ shinyServer(function(input, output, session) {
          <p>We created this app with the average American citizen as our target audience in hopes of allowing them to feel more involved in our political
          system. By breaking down, cleaning, and translating the data into a more readable format, people will be able to see clearly the data and 
          draw their own insights and conclusions.</p>
-         <p>You may view our code for this project at our github repository <a href='https://github.com/liuyaf/info201-af3-final-project'>here</a></p>")
+         <p>You may view our code for this project at our github repository <a href='https://github.com/liuyaf/info201-af3-final-project'>here</a></p>
+         <p><strong>Notice: </strong>Democrat Presidential Candidate data unavaliable for Mapping Money section. Will be updated if data is able to be obtained in future.</p>")
   })
 #######################################Contribution Scatter Plot#################################
   

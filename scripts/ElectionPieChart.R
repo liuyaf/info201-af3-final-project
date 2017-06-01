@@ -20,7 +20,6 @@ BuildPieChart <- function(house.results.temp, min, max) {
   data.graph <- data.frame("Won.Lost" = c("Won", "Lost"), "Results" = c(num.winners, num.losers), "Percentages" = c(perc.won, perc.lost))
   percent <- num.winners / total.rows
 
-  
   #Create pie chart that displays the percentage that won the election and lost based on money raised, including a hover text option
    pie.results <- plot_ly(data.graph, labels = ~Won.Lost, values = ~Percentages, type = 'pie',
                          hoverinfo = 'text', 
