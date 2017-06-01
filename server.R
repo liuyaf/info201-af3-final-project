@@ -34,9 +34,11 @@ max_plots <- 10
 # Build shinyServer
 shinyServer(function(input, output, session) {
   
-  # Washington Candidates contribution part
+  # Washington Candidates contribution part (Liuyang Fu)
   # the observeEvent listens the submit button and updates the name
   # of candidate 
+  # it reads input name and calls GetContributor function and 
+  # call 3 funtiosn with dataframe returned by GetContributor
   observeEvent(input$update.can, {
     
     isolate({
@@ -47,6 +49,7 @@ shinyServer(function(input, output, session) {
       
       cat("finished call")
       
+
       output$bar.con <- renderPlotly({
         return(BuildBarchart(con.to.candidate, input$colorvar, canname))
       })

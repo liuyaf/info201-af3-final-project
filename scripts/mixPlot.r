@@ -18,10 +18,13 @@ BuildBarchart <- function(map.df, colorvar, candidate.name) {
   map.df$name <- factor(map.df$name, 
                         levels = map.df$name[order(map.df$total,decreasing = TRUE)])
   
-  # build barchart
+  # build barchart with hover text of organization name, industry and total donation
   bar <- map.df %>% plot_ly(x = ~name, y = ~total, type = 'bar',
                        color = eval(parse(text = colorvar)),
-                       width = 1200, height = 1000) %>% 
+                       width = 1200, height = 1000,
+                       text = ~paste0('Organization: ', name, '<br>',
+                                      'Industry: ', industry, '<br>',
+                                      '$', total)) %>% 
     layout(margin = m, autosize = F, title = paste0('Top 100 Contributions to ', candidate.name))
   
   return(bar)
@@ -45,7 +48,7 @@ BuildMap <- function(map.df) {
     subunitwidth = 0.5
   )
   
-  # build map
+  # build map with color bar showing the number of contribution
   map <- map.df %>% plot_geo(lat = ~Latitude, lon = ~Longitude) %>% 
     add_markers(
       hoverinfo = 'text',
