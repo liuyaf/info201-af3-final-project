@@ -2,7 +2,8 @@
 # Info 201 Section AF
 # Assignment 8
 # ui.R file for building user interface appearance for data visualization of 
-# the Cereal data.
+# FollowTheMoney.org datasets. Produces various tabs and their contents within.
+
 library(leaflet)
 library(shiny)
 library(plotly)
@@ -15,7 +16,7 @@ candidate.barchart <- read.csv('./data/Candidate_2016.csv', stringsAsFactors = F
 
 shinyUI(navbarPage("Political Bidding", 
                    # Tab Panel will show a user interface for producing 
-                   tabPanel("2016 Election", 
+                   tabPanel("Money Mapping", 
                             
                             # Sidebar Panel holds the user selection inputs. Initial values of 
                             # the widgets are set to "Loading..." and updated by server.R once 
@@ -40,7 +41,7 @@ shinyUI(navbarPage("Political Bidding",
                       ),
                    
                    # Tab Panel shows the raw data that the plots are being formed by.
-                   tabPanel("Contribution to Candidate",
+                   tabPanel("Contributions to Candidates",
                             
                             # titlepanel
                             titlePanel('Top 100 Contribution to Specific Candidate'),
@@ -73,21 +74,38 @@ shinyUI(navbarPage("Political Bidding",
                             )
                             
                    ), # end tabPanel
-                   tabPanel("Candidate Winning Percentage",
-                            titlePanel("Candidate Winning Percentage Based Off Spending"),
+                   tabPanel("Monetary Influence",
                             
-                            sidebarPanel(
-                              textOutput("description"),
-                              # Radio buttons for either the user to see if they want to see data from the House or the Senate
-                              radioButtons("govBranch", label = h3("Select which Branch of Legislation you want to see:"), 
-                                           choices = c("House of Representatives", "Senate"), selected = "House of Representatives"),
-                              uiOutput("ui")
-                              #The slider for the user to select the range of money that they want to see
-                            ),
-                            
-                            mainPanel(
-                              plotlyOutput("electionChart")
+                            tabsetPanel(
+                              tabPanel("tab1",
+                                titlePanel("Candidate Winning Percentage Based Off Spending"),
+                                
+                                sidebarPanel(
+                                  textOutput("description"),
+                                  # Radio buttons for either the user to see if they want to see data from the House or the Senate
+                                  radioButtons("govBranch", label = h3("Select which Legislative Branch you want to see:"), 
+                                               choices = c("House of Representatives", "Senate"), selected = "House of Representatives"),
+                                  sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 34104655, value = c(0, 1000000))
+                                  #The slider for the user to select the range of money that they want to see
+                                ),
+                                
+                                
+                                mainPanel(
+                                  plotlyOutput("electionChart")
+                                )
+                              ),
+                              tabPanel("tab2",
+                                sidebarPanel(
+                                  selectInput("election2", "Election Type:", c("Loading...")),
+                                  selectInput("state", "Election Jurisdiction:", c("Loading...")),
+                                  selectInput("year2", "Year:", c("Loading..."))
+                                ),
+                                mainPanel(
+                                  plotlyOutput("winPlot", width = "100%", height = "100%")
+                                )
+                              )
                             )
+                            
                    ), # end tabPanel
                    
                    tabPanel("About",

@@ -1,21 +1,20 @@
+# Matthew Li
+# WinPlotMaker.R
+# Contains a function for creating a plotly scatter plot when passed in a specific dataframe.
 
 library(plotly) 
 library(dplyr)
 
-data.senate <- read.csv("./data/SenateElection.csv")
-data.filtered <- data.senate %>% select(Candidate, Status_of_Candidate, General_Party, Election_Jurisdiction, Election_Year, Incumbency_Status, Total_.)
-data.filtered <- data.filtered %>% filter(Election_Jurisdiction == "CA", Election_Year == "2012")
-
-data.filtered$size <- ntile(data.filtered$Total_., 5)
-
-# Function should be passed a dataframe with the following columns: General_Party, Candidate, 
-# Total_., Incumbency_Status
-
+# Produces a plotly scatter plot that has a x-axis containing each candidate, y-axis for total 
+# contributions recieved, and specific symbols for win/loss.
 BuildElectionResult <- function(data.filtered) {
   
+  # Color pallet.
   col3 <- c(`Third-Party` = 'green', `Republican` = "red", `Democratic` = "blue")
+  # Symbol pallet.
   sy <- c(`Won` = 11, `Withdrew` = 15, `Lost` = 4)
     
+  # Creation of plotly output.
   p <- plot_ly(data = data.filtered, y = ~Total_., x = ~Candidate, type = 'scatter',
               color = ~General_Party, colors = col3,
               symbol = ~Status_of_Candidate, symbols = sy, 
@@ -25,7 +24,7 @@ BuildElectionResult <- function(data.filtered) {
                             'Status: ', Incumbency_Status, '</br>',
                             'Contributions: $', Total_., '</br>',
                             'Party: ', General_Party)) %>%
-      layout(margin = list(b = 160, l = 115), xaxis = list(tickangle = 45, title = "Candidate"), 
+      layout(margin = list(b = 160, l = 120), xaxis = list(tickangle = 45, title = "Candidate"), 
              yaxis = list(title = "Total Recieved Contributions"))
   return(p)
 }

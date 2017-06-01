@@ -1,7 +1,7 @@
 # Group AF3
 # Info 201 Section AF
-# Final Project
-
+# Server.R file which contains the event handlers for various
+# inputs to manipulate the data and the UI's appearance. 
 
 # load libraries
 library(tools)
@@ -18,6 +18,7 @@ library(jsonlite)
 source("./scripts/scatterMapBuilder.r")
 source('./scripts/readFile.R')
 source('./scripts/mixPlot.r')
+source('./scripts/WinPlotMaker.R')
 
 # read csv file and store global variable
 out.senate <- as.data.frame(read.csv("./data/mapping/Senate_City.csv", stringsAsFactors = FALSE))
@@ -26,6 +27,13 @@ out.pres <- as.data.frame(read.csv("./data/mapping/Pres_City.csv", stringsAsFact
 city.locations <- as.data.frame(read.csv("./data/mapping/city_location.csv", stringsAsFactors = FALSE))
 city.locations <- city.locations %>% group_by(State, City, County) %>% summarise(lat = min(Latitude), lon = min(Longitude))
 
+
+
+pres.gen <- as.data.frame(read.csv("./data/PresidentialElection.csv"))
+senate.gen <- as.data.frame(read.csv("./data/SenateElection.csv"))
+house.gen <- as.data.frame(read.csv("./data/HouseElection.csv"))
+  
+  
 n_tabs <- 0
 max_plots <- 10
 
@@ -41,23 +49,24 @@ shinyServer(function(input, output, session) {
   # call 3 funtiosn with dataframe returned by GetContributor
   observeEvent(input$update.can, {
     
+    # Isolation required since triggered by various selectInputs which are referenced. Isolation
+    # eliminates unneccessary calling.
     isolate({
       canname <- input$canname
-      cat("start call")
-      
-      con.to.candidate <- GetContributor(canname)
-      
-      cat("finished call")
-      
 
+      con.to.candidate <- GetContributor(canname)
+
+      # Renders the bar plot
       output$bar.con <- renderPlotly({
         return(BuildBarchart(con.to.candidate, input$colorvar, canname))
       })
       
+      # Renders the map.
       output$map.con <- renderPlotly({
         return(BuildMap(con.to.candidate))
       })
       
+      # Renders the pie chart
       output$pie.con <- renderPlotly({
         industry.candidate <- con.to.candidate %>% group_by(industry) %>% summarise(total = sum(total))
         industry.candidate <- industry.candidate %>% mutate(name = industry, percent = total / sum(total)) 
@@ -76,6 +85,8 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  
+  
   # Sources in the script to build Pie chart
   source("./scripts/ElectionPieChart.R")
   
@@ -86,12 +97,14 @@ shinyServer(function(input, output, session) {
     that amount for their campaign."
   })
   
+  
+  
   # Checks which gov branch the user wants and then builds the pie chart within all the specified input values
   output$electionChart <- renderPlotly({
     if (input$govBranch == "Senate") {
-      legislature.branch <- read.csv("data/SenateElection.csv", stringsAsFactors=FALSE)
+      legislature.branch <- senate.gen
     } else {
-      legislature.branch <- read.csv("data/HouseElection.csv", stringsAsFactors=FALSE)
+      legislature.branch <- house.gen
     }
     wanted.data.from.branch <- legislature.branch[,c(13,36)]
     colnames(wanted.data.from.branch)[2] <- "total"
@@ -108,23 +121,84 @@ shinyServer(function(input, output, session) {
          <p>With this expansive amount of data, we decided to focus around three target questions, which we divided up among the three
           tabs:</p>
          <ol>
-          <li><strong>Who is each politician getting their money from while they are in office?</strong>  For this question, we allow you
-          to type in any politician and be able to see using either a bar chart, pie chartthe top 100 contributions for that politician.</li>
-          <li><strong>From where is each politician receiving their money from?</strong>  Although this sounds similar to question 1, this question
-          focuses more geographically and the location of the donations.  You will be able to see on the map, where each politician is most popular 
-          and receive the most donations.</li>
-          <li><strong>Is there a correlation between the amount of money a candidate spends campaigning and their chances of winning the election?</strong>
-            More money is flooding system currently than ever before and so we would like to see if that helps their chances of winning.  Also with Obama's
-          use of Big Data and analytics in his second campaign, we would like to see if other politicians were able to do more with less.</li>
+          <li><strong>Who is funding each politician?</strong> Under the 'Contributions to Candidates' tab, we allow a user to query the FollowTheMoney.org
+          database which returns the top 100 contributors for the particular politician. Using the returned data from the API, we construct visual representations
+          of the data to display the top contributors by their industry, name, and other qualities.</li>
+          <li><strong>Where are Politicians recieving funds Geographically?</strong> For this section, we wrangled over 100 million rows of data. To reduce
+          load time, we prewrangled the data and exported it to a CSV file. The data stored includes the total contributions from each city to each political candidate.
+          Using this data, we can map the total amounts onto a map from which we can then explore.</li>
+          <li><strong>Does Money really influence Politics?</strong> More money is flooding system currently than ever before and so we would like to see if that helps
+          their chances of winning. Explored in the final tab, we explore how varying ranges of contributions changes the win/loss ratio. Additionally,
+          in the sub-tab of this section, one can explore the outcomes of specific elections based on contributions.</li>
          </ol>
          <p>We created this app with the average American citizen as our target audience in hopes of allowing them to feel more involved in our political
-         system.  By breaking down, cleaning, and translating the data into a more readable format, people will be able to see clearly the data and 
+         system. By breaking down, cleaning, and translating the data into a more readable format, people will be able to see clearly the data and 
          draw their own insights and conclusions.</p>
-         <p>You may view our code for this project at our github repository:<a>https://github.com/liuyaf/info201-af3-final-project</a> (Copy and Paste link into
-         your URL)</p>")
+         <p>You may view our code for this project at our github repository <a href='https://github.com/liuyaf/info201-af3-final-project'>here</a></p>")
+  })
+#######################################Contribution Scatter Plot#################################
+  
+# # # # # # # # # # # # # # # # # # # Matthew Li, AF3 # # # # # # # # # # # # # # # # # # # # # #
+  
+  # Reactive data value. Provides all served from either Presidential, Senate, or House of representative data
+  # frames stored in the global variable fields. 
+  # Determines if the csv files are completely loaded, if not, loading dataframe is produced and returned.
+  data.type <- reactive({
+    if(input$election2 != 'Loading...') {
+      if(input$election2 == 'Presidential') {
+        return(pres.gen)
+      } else if(input$election2 == 'Senate') {
+        return(senate.gen)
+      } else {
+        return(house.gen)
+      }
+    } else {
+      # Produce a loading data frame for other input fields to be filled.
+      loading <- data.frame(c("Loading..."), c("Loading..."), c("Loading..."), c("Loading..."), c("Loading..."))
+      colnames(loading) <- c("Election_Year", "Election_Jurisdiction", "Candidate", "State", "City")
+      return(loading)
+    }
+  })
+  
+  # Reactive data value. Provides a filtered version of the data.type value which only contains the
+  # years avaliable given a specific state.
+  year <- reactive({
+    out.filtered <- data.type()
+    out.filtered <- out.filtered %>% filter_(paste0('Election_Jurisdiction == "', input$state, '"'))
+    return(out.filtered)
+  })
+  
+  # ObserveEvent for select user input for election. Initially set to loading. When csv files are completely filled,
+  # input field is repopulated with optiuons for Presidential, Senate, and House of Representatives. On observed event,
+  # updates the fields for the year, party, and candidiate inputs.
+  observeEvent(input$election2, {
+    if(input$election2 == 'Loading...') {
+      updateSelectInput(session, "election2", choices = c("Presidential", "Senate", "House of Representatives"), selected = "Presidential")
+    }
+    updateSelectInput(session, "state", choices = unique(data.type()$Election_Jurisdiction))
+    updateSelectInput(session, "year2", choices = unique(year()$Election_Year))
+  })
+  
+  # ObserveEvent for select user input for selectInput for year. Changes the selectInput's choices when 
+  # a change in the year variable occurs.
+  observeEvent(year(), {
+    updateSelectInput(session, "year2", choices = c(unique(year()$Election_Year)))
+  })
+  
+  # Renders the plot. Utilizes the BuildElectionResult function located in the WinPlotMaker.R file.
+  output$winPlot <- renderPlotly({
+    if(input$election2 != 'Loading...') {
+      data.out <- data.type()
+      if(input$election2 != 'Presidential') {
+        data.out <- data.out %>% filter_(paste0('Election_Jurisdiction == "', input$state, '"'))
+      }
+      data.out <- data.out %>% filter_(paste0('Election_Year == "', input$year2,'"'))
+      BuildElectionResult(data.out)
+    }
   })
   
 #######################################MAPPING EVENTS#############################################
+  
 # # # # # # # # # # # # # # # # # # # Matthew Li, AF3 # # # # # # # # # # # # # # # # # # # # # #
   
   # Reactive data value. Provides all served from either Presidential, Senate, or House of representative data
