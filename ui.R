@@ -88,7 +88,6 @@ shinyUI(navbarPage("Political Bidding",
                             mainPanel(
                               plotlyOutput("electionChart")
                             )
-                            
                    ), # end tabPanel
                    
                    tabPanel("About",
@@ -97,5 +96,4 @@ shinyUI(navbarPage("Political Bidding",
                               uiOutput("about"), width = 12
                             )
                     )
-
 )) #end shinyUI
