@@ -79,11 +79,11 @@ shinyServer(function(input, output, session) {
   # Checks which branch the user wants by seeing what radio value is clicked on, and then adjusts the max values of the sliders
   output$ui <- renderUI({
     if (input$govBranch == "Senate") {
-      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 36104654.92, value = c(0, 1000000)))
-    } else if(input$govBranch == "House of Representatives"){
       return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 80122596.41, value = c(0, 1000000)))
+    } else if(input$govBranch == "House of Representatives"){
+      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 36104655.12, value = c(0, 1000000)))
     } else {
-      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 828383035.2, value = c(0, 1000000)))
+      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 818383160.31, value = c(0, 1000000)))
     }
   })
   

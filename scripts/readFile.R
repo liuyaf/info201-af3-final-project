@@ -16,13 +16,12 @@ base.uri <- 'http://api.followthemoney.org/'
 
 # each apikey has limited amout of search time, in case it's not working
 # we here to provide some extra ones
-api.key <- '7be505410566c70b79af7b50235af246'
+api.key <- 'b6349b9565e5e9bc024b94923636fae5'
 
-# b6349b9565e5e9bc024b94923636fae5'
-
-# extra0: babd0de84e727110ff37faed81c9da27'
+# extra0: babd0de84e727110ff37faed81c9da27
 # extra1: 80a85901cac92dfe0d3d9752152f15f9
 # extra2: 0bf78baa9ca34b47d96c966cff0804a1
+# extra3: 7be505410566c70b79af7b50235af246
 
 year <- 2016
 mode.json <- 'json'
