@@ -64,7 +64,7 @@ shinyServer(function(input, output, session) {
   })
   
  
-  
+  # Checks which branch the user wants by seeing what radio value is clicked on, and then adjusts the max values of the sliders
   output$ui <- renderUI({
    if (input$govBranch == "Senate") {
     return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 50210591.79, value = c(0, 1000000)))
@@ -73,14 +73,17 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Sources in the script to build Pie chart
   source("./scripts/ElectionPieChart.R")
   
+  # Creates text within the side panel to describe what this tab does
   output$description <- renderText({
     "This graph helps to visualize a correlation between politician's spending money and their percentage of either losing or winning that 
     election.  Note that if you scroll to a money range where no pie chart displays, that means we have no data on politicians spending
     that amount for their campaign."
   })
   
+  # Checks which gov branch the user wants and then builds the pie chart within all the specified input values
   output$electionChart <- renderPlotly({
     if (input$govBranch == "Senate") {
       legislature.branch <- read.csv("data/SenateElection.csv", stringsAsFactors=FALSE)
@@ -92,6 +95,7 @@ shinyServer(function(input, output, session) {
     return(BuildPieChart(wanted.data.from.branch, input$moneyRange[1], input$moneyRange[2]))
   })
   
+  #Adds the text to the about tab using HTML tags
   output$about <- renderUI({
     HTML("<strong>Matthew Li, Liuyang Fu, Nikhil Goel, Dean Barlan</strong></br></br>
          <p>For our project, we decided to use a combination of api calls and csv files, both of which came from FollowTheMoney.org.
