@@ -60,7 +60,7 @@ shinyServer(function(input, output, session) {
   
   output$ui <- renderUI({
    if (input$govBranch == "Senate") {
-    return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 80122596, value = c(0, 1000000)))
+    return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 50210591.79, value = c(0, 1000000)))
    } else {
     return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 34104655, value = c(0, 1000000)))
     }
@@ -80,16 +80,32 @@ shinyServer(function(input, output, session) {
     } else {
       legislature.branch <- read.csv("data/HouseElection.csv", stringsAsFactors=FALSE)
     }
-    wanted.data.from.branch <- legislature.branch[,c(13,16,36)]
+    wanted.data.from.branch <- legislature.branch[,c(13,36)]
+    colnames(wanted.data.from.branch)[2] <- "total"
     return(BuildPieChart(wanted.data.from.branch, input$moneyRange[1], input$moneyRange[2]))
   })
   
-  output$about <- renderText({
-    "For our project we decided to use the FollowTheMoney.org dataset where we were able to analyze how money flowed through 
-    our government and to our politicians.  While analyzing the datasets, we had three target questions, in which we have divided it 
-    up among the other three tabs: 1) Who is each politician getting their money from while they are in office?  2) From where are politicians
-    receiving money from? 3)  Is there a correlation between the amount of money a candidate spends campaigning and their changes of winning the
-    election."
+  output$about <- renderUI({
+    HTML("<strong>Matthew Li, Liuyang Fu, Nikhil Goel, Dean Barlan</strong></br></br>
+         <p>For our project, we decided to use a combination of api calls and csv files, both of which came from FollowTheMoney.org.
+         FollowTheMoney.org is a nonprofit site whose purpose is to <q><i>promotes an accountable democracy by compiling comprehensive 
+         campaign-donor, lobbyist, and other information from the government disclosure agencies nationwide.</i></q>  Their data centers 
+          around the flow of over 50 billion dollars through the US government to many endpoints like our politicians.</p>
+         <p>With this expansive amount of data, we decided to focus around three target questions, which we divided up among the three
+          tabs:</p>
+         <ol>
+          <li><strong>Who is each politician getting their money from while they are in office?</strong>  For this question, we allow you
+          to type in any politician and be able to see using either a bar chart, pie chartthe top 100 contributions for that politician.</li>
+          <li><strong>From where is each politician receiving their money from?</strong>  Although this sounds similar to question 1, this question
+          focuses more geographically and the location of the donations.  You will be able to see on the map, where each politician is most popular 
+          and receive the most donations.</li>
+          <li><strong>Is there a correlation between the amount of money a candidate spends campaigning and their chances of winning the election?</strong>
+            More money is flooding system currently than ever before and so we would like to see if that helps their chances of winning.  Also with Obama's
+          use of Big Data and analytics in his second campaign, we would like to see if other politicians were able to do more with less.</li>
+         </ol>
+         <p>We created this app with the average American citizen as our target audience in hopes of allowing them to feel more involved in our political
+         system.  By breaking down, cleaning, and translating the data into a more readable format, people will be able to see clearly the data and 
+         draw their own insights and conclusions.</p>")
   })
   
 #######################################MAPPING EVENTS#############################################

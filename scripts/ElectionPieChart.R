@@ -10,7 +10,7 @@ BuildPieChart <- function(house.results.temp, min, max) {
   #Filter data to only show wins and loses, not pending or other info
   final.house.data <- house.filtered %>% filter(Status_of_Candidate == "Won" || Status_of_Candidate == "Lost" )
   #count total members, total winners, and total losers to calculate the percentages
-  total.rows <- sum(complete.cases(final.house.data))
+  total.rows <- nrow(final.house.data)
   num.winners <- sum(final.house.data$Status_of_Candidate == "Won")
   num.losers <- sum(final.house.data$Status_of_Candidate == "Lost")
   perc.lost <- num.losers / total.rows
