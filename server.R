@@ -48,7 +48,7 @@ shinyServer(function(input, output, session) {
       cat("finished call")
       
       output$bar.con <- renderPlotly({
-        return(BuildBarchart(con.to.candidate, input$colorvar))
+        return(BuildBarchart(con.to.candidate, input$colorvar, canname))
       })
       
       output$map.con <- renderPlotly({
