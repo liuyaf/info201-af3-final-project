@@ -124,8 +124,6 @@ shinyUI(navbarPage("Political Bidding",
                    
                    tabPanel("About",
                             titlePanel("About"),
-                            mainPanel(
-                              uiOutput("about"), width = 12
-                            )
+                            uiOutput("about"), width = 12
                     )
 )) #end shinyUI
