@@ -50,11 +50,15 @@ shinyUI(navbarPage("Political Bidding",
                    tabPanel("Contributions to Candidates",
                             
                             # titlepanel
-                            titlePanel('Top 100 Contribution to Specific Candidate'),
+                            titlePanel('Top 100 Contributions to Specific Candidate'),
                             
                             # creates sidebar to input candidate's name
                             sidebarLayout(
                               sidebarPanel(
+                                h3('Explore details of top 100 contributions'),
+                                h5('Notice: This tab queries information through api which might take up to 5 - 10 minutes
+                                   to query the data. Please 1. wait for other tab loaded before working on this tab;
+                                   2. after clicking submit button, wait for up to 5-10 minutes to load the data'),
                                 
                                 # selectize input to allow user to input candidate's name
                                 selectizeInput(
