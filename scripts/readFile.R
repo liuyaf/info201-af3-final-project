@@ -6,7 +6,8 @@ library(jsonlite)
 
 # read candidate file and wrangle the data
 
-can.wa.16 <- read.csv('./data/2016_WA_Candidates.csv', stringsAsFactors = FALSE)
+can.16 <- read.csv('./data/Candidate_2016.csv', stringsAsFactors = FALSE)
+
 
 zip <- read.csv('./data/mapping/zipcode_lat_lon.csv', stringsAsFactors = FALSE)
 zip <- zip %>% select(Zip_Code,Latitude,Longitude)
@@ -32,7 +33,7 @@ mode.json <- 'json'
 # dataframe contains name of oragization, zip code, # of records and total number
 GetContributor <- function(can.name) {
   # get candidate id
-  can.df <- can.wa.16 %>% filter(Candidate == can.name)
+  can.df <- can.16 %>% filter(Candidate == can.name)
   can.id <- as.character(can.df$Candidate_Entity.id)
   
   # query info through api
@@ -45,12 +46,16 @@ GetContributor <- function(can.name) {
   response.content <- content(response, "text")
   body.data <- fromJSON(response.content)
   
-  # wrangle the dataframe 
+  # wrangle the dataframe
   df <- flatten(body.data$records)
   df <- df %>% select(Contributor.Contributor, Zip.id,Broad_Sector.Broad_Sector, `#_of_Records.#_of_Records`,`Total_$.Total_$`)
   colnames(df) <- c('name', 'zip', 'industry','records', 'total')
   df$zip <- as.integer(df$zip)
   df <- left_join(df, zip, by = c('zip' = 'Zip_Code'))
   df$total <- as.numeric(df$total)
+  
   return(df)
+
+  
 }
+

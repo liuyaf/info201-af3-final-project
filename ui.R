@@ -11,7 +11,7 @@ library(leaflet)
 library(jsonlite)
 
 # read the candidate name for selectizeInput
-wa.candidate <- read.csv('./data/2016_WA_Candidates.csv')
+candidate.barchart <- read.csv('./data/Candidate_2016.csv', stringsAsFactors = FALSE)
 
 shinyUI(navbarPage("Political Bidding", 
                    # Tab Panel will show a user interface for producing 
@@ -43,7 +43,7 @@ shinyUI(navbarPage("Political Bidding",
                    tabPanel("Contribution to Candidate",
                             
                             # titlepanel
-                            titlePanel('Top 100 Contribution to Specific Candidate (WA)'),
+                            titlePanel('Top 100 Contribution to Specific Candidate'),
                             
                             # creates sidebar to input candidate's name
                             sidebarLayout(
@@ -51,9 +51,9 @@ shinyUI(navbarPage("Political Bidding",
                                 
                                 # Input box to collect candidate's name
                                 selectizeInput(
-                                  'canname', label = h3('WA Candidate Name'), choices = wa.candidate$Candidate
+                                  'canname', label = h3('Candidate Name'), choices = candidate.barchart$Candidate
                                 ),
-                                # textInput("canname", label = h3("Candidate Name"), value = "MURRAY, PATTY"),
+
                                 
                                 # radio butttons that can group barchart by industry
                                 radioButtons("colorvar", label = h3("Group Barchart by Industry"),
