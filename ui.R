@@ -21,7 +21,10 @@ shinyUI(navbarPage("Political Bidding",
                             # Sidebar Panel holds the user selection inputs. Initial values of 
                             # the widgets are set to "Loading..." and updated by server.R once 
                             # csv files are completely read.
+                            h2("Mapping Money"),
                             sidebarPanel(
+                              h3("Explore which parts of the country are donating money to specific politicians."),
+                              h5("To use, create new plot."),
                               selectInput("election", "Election Type:", c("Loading...")),
                               selectInput("year", "Year:", c("Loading...")),
                               selectInput("party", "General Party:", c("Loading...")),
@@ -77,15 +80,17 @@ shinyUI(navbarPage("Political Bidding",
                    tabPanel("Monetary Influence",
                             
                             tabsetPanel(
-                              tabPanel("tab1",
+                              tabPanel("General Exploration",
                                 titlePanel("Candidate Winning Percentage Based Off Spending"),
                                 
                                 sidebarPanel(
-                                  textOutput("description"),
+                                  h5("This graph helps to visualize a correlation between politician's spending money and their percentage of either losing or winning that 
+    election.  Note that if you scroll to a money range where no pie chart displays, that means we have no data on politicians spending
+                                     that amount for their campaign."),
                                   # Radio buttons for either the user to see if they want to see data from the House or the Senate
-                                  radioButtons("govBranch", label = h3("Select which Legislative Branch you want to see:"), 
-                                               choices = c("House of Representatives", "Senate"), selected = "House of Representatives"),
-                                  sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 34104655, value = c(0, 1000000))
+                                  radioButtons("govBranch", label = h3("Select Election Type:"), 
+                                               choices = c("House of Representatives", "Senate", "Presidential"), selected = "House of Representatives"),
+                                  uiOutput("ui")
                                   #The slider for the user to select the range of money that they want to see
                                 ),
                                 
@@ -94,14 +99,16 @@ shinyUI(navbarPage("Political Bidding",
                                   plotlyOutput("electionChart")
                                 )
                               ),
-                              tabPanel("tab2",
+                              tabPanel("Case-Study Exploration",
+                                h2("Case-Study Exploration"),
                                 sidebarPanel(
+                                  h3("Explore specific candidate's total contributions and their election results."),
                                   selectInput("election2", "Election Type:", c("Loading...")),
                                   selectInput("state", "Election Jurisdiction:", c("Loading...")),
                                   selectInput("year2", "Year:", c("Loading..."))
                                 ),
                                 mainPanel(
-                                  plotlyOutput("winPlot", width = "100%", height = "100%")
+                                  plotlyOutput("winPlot", width = '100%', height = 'auto')
                                 )
                               )
                             )

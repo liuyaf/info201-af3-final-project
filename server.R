@@ -78,33 +78,29 @@ shinyServer(function(input, output, session) {
  
   # Checks which branch the user wants by seeing what radio value is clicked on, and then adjusts the max values of the sliders
   output$ui <- renderUI({
-   if (input$govBranch == "Senate") {
-    return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 50210591.79, value = c(0, 1000000)))
-   } else {
-    return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 34104655, value = c(0, 1000000)))
+    if (input$govBranch == "Senate") {
+      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 36104654.92, value = c(0, 1000000)))
+    } else if(input$govBranch == "House of Representatives"){
+      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 80122596.41, value = c(0, 1000000)))
+    } else {
+      return (sliderInput("moneyRange", label = h3("Adjust Slider to Select Money Range"), min = 0, max = 828383035.2, value = c(0, 1000000)))
     }
   })
-  
-  
   
   # Sources in the script to build Pie chart
   source("./scripts/ElectionPieChart.R")
   
   # Creates text within the side panel to describe what this tab does
-  output$description <- renderText({
-    "This graph helps to visualize a correlation between politician's spending money and their percentage of either losing or winning that 
-    election.  Note that if you scroll to a money range where no pie chart displays, that means we have no data on politicians spending
-    that amount for their campaign."
-  })
-  
-  
+ 
   
   # Checks which gov branch the user wants and then builds the pie chart within all the specified input values
   output$electionChart <- renderPlotly({
     if (input$govBranch == "Senate") {
       legislature.branch <- senate.gen
-    } else {
+    } else if(input$govBranch == "House of Representatives") {
       legislature.branch <- house.gen
+    } else {
+      legislature.branch <- pres.gen
     }
     wanted.data.from.branch <- legislature.branch[,c(13,36)]
     colnames(wanted.data.from.branch)[2] <- "total"
@@ -114,7 +110,8 @@ shinyServer(function(input, output, session) {
   #Adds the text to the about tab using HTML tags
   output$about <- renderUI({
     HTML("<strong>Matthew Li, Liuyang Fu, Nikhil Goel, Dean Barlan</strong></br></br>
-         <p>For our project, we decided to use a combination of api calls and csv files, both of which came from FollowTheMoney.org.
+         <p>For our project, we decided to use a combination of API calls and CSV files, to produce visual representations of the
+          data.  All data was sourced from FollowTheMoney.org.
          FollowTheMoney.org is a nonprofit site whose purpose is to <q><i>promotes an accountable democracy by compiling comprehensive 
          campaign-donor, lobbyist, and other information from the government disclosure agencies nationwide.</i></q>  Their data centers 
           around the flow of over 50 billion dollars through the US government to many endpoints like our politicians.</p>

@@ -17,7 +17,7 @@ BuildPieChart <- function(house.results.temp, min, max) {
   perc.won <- num.winners / total.rows
 
   #create data frame to be used in the chart creation
-  data.graph <- data.frame("Won/Lost" = c("Won", "Lost"), "Results" = c(num.winners, num.losers), "Percentages" = c(perc.won, perc.lost))
+  data.graph <- data.frame("Won.Lost" = c("Won", "Lost"), "Results" = c(num.winners, num.losers), "Percentages" = c(perc.won, perc.lost))
   percent <- num.winners / total.rows
 
   
