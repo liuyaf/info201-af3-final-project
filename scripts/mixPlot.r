@@ -5,7 +5,7 @@ library(dplyr)
 
 # the function takes a dataframe and colorvar as variable
 # and returns a barchart listing top 100 donation to specific candidate
-BuildBarchart <- function(map.df, colorvar) {
+BuildBarchart <- function(map.df, colorvar, candidate.name) {
   
   # margin setting
   m <- list(l = 50, r = 50, b = 280, t = 100, pad = 4)
@@ -20,9 +20,9 @@ BuildBarchart <- function(map.df, colorvar) {
   
   # build barchart
   bar <- map.df %>% plot_ly(x = ~name, y = ~total, type = 'bar',
-                       name = 'Top 100 Contribution',color = eval(parse(text = colorvar)),
+                       color = eval(parse(text = colorvar)),
                        width = 1200, height = 1000) %>% 
-    layout(margin = m, autosize = F)
+    layout(margin = m, autosize = F, title = paste0('Top 100 Contributions to ', candidate.name))
   
   return(bar)
 }

@@ -64,12 +64,11 @@ shinyUI(navbarPage("Political Bidding",
                               
                               # Use plotlyOutput to show the scatter plot
                               mainPanel(
-                                tabsetPanel(
-                                  tabPanel("Barchart", plotlyOutput("bar.con")), 
-                                  tabPanel("Map", plotlyOutput("map.con")), 
-                                  tabPanel("Piechart", plotlyOutput("pie.con"))
-                                )
-                                
+                                 tabsetPanel(
+                                   tabPanel("Barchart", plotlyOutput("bar.con")), 
+                                   tabPanel("Map", plotlyOutput("map.con")), 
+                                   tabPanel("Piechart", plotlyOutput("pie.con"))
+                                 )
                               )
                             )
                             

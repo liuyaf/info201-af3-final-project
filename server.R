@@ -39,20 +39,27 @@ shinyServer(function(input, output, session) {
   # of candidate 
   observeEvent(input$update.can, {
     
-    canname <- input$canname
-    output$bar.con <- renderPlotly({
+    isolate({
+      canname <- input$canname
+      cat("start call")
+      
       con.to.candidate <- GetContributor(canname)
-      return(BuildBarchart(con.to.candidate, input$colorvar))
-    })
-    
-    output$map.con <- renderPlotly({
-      con.to.candidate <- GetContributor(canname)
-      return(BuildMap(con.to.candidate))
-    })
-    
-    output$pie.con <- renderPlotly({
-      industry.candidate <- GetIndustryPercent(canname)
-      return(BuildPie(industry.candidate))
+      
+      cat("finished call")
+      
+      output$bar.con <- renderPlotly({
+        return(BuildBarchart(con.to.candidate, input$colorvar, canname))
+      })
+      
+      output$map.con <- renderPlotly({
+        return(BuildMap(con.to.candidate))
+      })
+      
+      output$pie.con <- renderPlotly({
+        industry.candidate <- con.to.candidate %>% group_by(industry) %>% summarise(total = sum(total))
+        industry.candidate <- industry.candidate %>% mutate(name = industry, percent = total / sum(total)) 
+        return(BuildPie(industry.candidate))
+      })
     })
   })
   
