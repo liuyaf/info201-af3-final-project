@@ -4,10 +4,8 @@ library(httr)
 library(dplyr)
 library(jsonlite)
 
-# read candidate file and wrangle the data
-
+# read files and wrangle data
 can.16 <- read.csv('./data/Candidate_2016.csv', stringsAsFactors = FALSE)
-
 
 zip <- read.csv('./data/mapping/zipcode_lat_lon.csv', stringsAsFactors = FALSE)
 zip <- zip %>% select(Zip_Code,Latitude,Longitude)

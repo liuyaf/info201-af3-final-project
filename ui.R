@@ -49,7 +49,7 @@ shinyUI(navbarPage("Political Bidding",
                             sidebarLayout(
                               sidebarPanel(
                                 
-                                # Input box to collect candidate's name
+                                # selectize input to allow user to input candidate's name
                                 selectizeInput(
                                   'canname', label = h3('Candidate Name'), choices = candidate.barchart$Candidate
                                 ),
