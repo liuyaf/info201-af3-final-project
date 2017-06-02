@@ -1,6 +1,6 @@
 # info201-af3-final-project
 
-Full Shiny Application Located [here](https://matthewkli.shinyapps.io/political_bidding/)
+Full Shiny Application Located [here](https://liuyaf.shinyapps.io/info201-af3-final-project/)
 
 ## Project Goal
 
